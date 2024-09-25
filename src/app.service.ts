@@ -11,6 +11,6 @@ export class AppService {
 
   getCurrentEnvironment() {
     const env = this.configService.get<string>('NODE_ENV');
-    return env || 'development'; // Trả về 'development' nếu không có giá trị
+    return env || 'dev'; // Trả về 'dev' nếu không có giá trị
   }
 }

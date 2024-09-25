@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import {Module} from '@nestjs/common';
+import {ConfigModule} from '@nestjs/config';
 import * as path from 'path';
 
 @Module({
@@ -15,7 +15,6 @@ import * as path from 'path';
                         : path.resolve(__dirname, '..', '.env.dev'),
             ],
         }),
-        // Các module khác
     ],
 })
-export class AppConfigModule {}
+export class ConfigAppModule {}
