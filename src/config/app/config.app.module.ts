@@ -7,10 +7,9 @@ import * as path from 'path';
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: [
-                // Tải tệp .env dựa trên NODE_ENV
-                process.env.NODE_ENV === 'production'
+                process.env.NODE_ENV === 'prod'
                     ? path.resolve(__dirname, '..', '.env.prod')
-                    : process.env.NODE_ENV === 'staging'
+                    : process.env.NODE_ENV === 'stg'
                         ? path.resolve(__dirname, '..', '.env.stg')
                         : path.resolve(__dirname, '..', '.env.dev'),
             ],

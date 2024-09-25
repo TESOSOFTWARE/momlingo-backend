@@ -18,9 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "docker:dev": "NODE_ENV=dev DATABASE_NAME=momlingo_db_dev docker-compose up --build",
-    "docker:staging": "NODE_ENV=stg DATABASE_NAME=momlingo_db_stg docker-compose up --build",
-    "docker:prod": "NODE_ENV=prod DATABASE_NAME=momlingo_db_prod docker-compose up --build"
+    "docker:dev": "env-cmd -f .env.dev docker-compose up --build",
+    "docker:stg": "env-cmd -f .env.stg docker-compose up --build",
+    "docker:prod": "env-cmd -f .env.prod docker-compose up --build"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -44,6 +44,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
