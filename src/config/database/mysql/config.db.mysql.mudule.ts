@@ -1,5 +1,6 @@
 import {Module} from "@nestjs/common";
 import {TypeOrmModule} from "@nestjs/typeorm";
+import {User} from "../../../models/users/entities/user.entity";
 
 @Module({
     imports: [
@@ -11,7 +12,10 @@ import {TypeOrmModule} from "@nestjs/typeorm";
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_NAME,
             autoLoadEntities: true,
-            synchronize: process.env.NODE_ENV !== 'prod', // Tự động đồng bộ chỉ trong môi trường không phải production
+            entities: [User],
+            synchronize: process.env.NODE_ENV !== 'prod',
+            migrations: ['src/database/migrations'],
+
         }),
     ],
 })
