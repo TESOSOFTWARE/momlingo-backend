@@ -1,5 +1,5 @@
 import {DataSource} from 'typeorm';
-import 'dotenv/config';
+
 // Note: process.env not working with username, password here.
 // You must manually configure each .env
 const AppDataSource = new DataSource({

@@ -7,6 +7,9 @@ import {ConfigModule} from "@nestjs/config";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import typeOrmConfig from "./config/database/mysql/typeorm.config";
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 @Module({
     imports: [
         ConfigAppModule,
