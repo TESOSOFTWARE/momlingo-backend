@@ -20,7 +20,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "env-cmd -f .env.dev docker-compose up --build",
     "docker:stg": "env-cmd -f .env.stg docker-compose up --build",
-    "docker:prod": "env-cmd -f .env.prod docker-compose up --build"
+    "docker:prod": "env-cmd -f .env.prod docker-compose up --build",
+    "typeorm": "typeorm",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run",
+    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert",
+    "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate",
+    "migration:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

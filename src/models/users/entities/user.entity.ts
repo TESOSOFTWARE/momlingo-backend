@@ -13,4 +13,10 @@ export class User {
 
     @Column()
     password: string;
+
+    @Column()
+    createdAt: Date;
+
+    @Column()
+    updatedAt: Date;
 }

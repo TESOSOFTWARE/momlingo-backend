@@ -4,5 +4,5 @@
    http://localhost:3000/
 3. Database dashboard
    http://localhost:8080/
-
+4. typeorm migration:create ./src/config/database/migrations/CreateUsersTable 
 Note: Need create Database before run project with docker
