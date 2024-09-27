@@ -7,4 +7,4 @@
 4. Create migration: 
    yarn migration:create CreatePostTable
 
-Note: Need create Database before run project with docker
+#Note: Need create Database before run project with docker
