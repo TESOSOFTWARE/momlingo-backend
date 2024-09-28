@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 
 // Note: process.env not working with username, password here.
 // You must manually configure each .env
+// Create database first, then change database corresponding env
 const AppDataSource = new DataSource({
   type: 'mysql',
   host: process.env.DATABASE_HOST,
