@@ -25,6 +25,10 @@ services:
 
   app:
     build: .
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npx nodemon src/main.ts
     ports:
       - "3000:3000"
     environment:

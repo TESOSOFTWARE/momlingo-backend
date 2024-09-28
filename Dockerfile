@@ -13,6 +13,9 @@ RUN yarn install --frozen-lockfile
 # Sao chép mã nguồn
 COPY . .
 
+# Chạy nodemon
+CMD ["npx", "nodemon", "src/main.ts"]
+
 # Biên dịch ứng dụng
 RUN yarn build
 
