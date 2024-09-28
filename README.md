@@ -6,5 +6,7 @@
    http://localhost:8080/
 4. Create migration: 
    yarn migration:create CreatePostTable
+5. Auto format code with elint
+   yarn lint
 
 Note: Need create Database before run project with docker
