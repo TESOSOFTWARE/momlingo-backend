@@ -5,9 +5,9 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategy/jwt.strategy';
-import {LocalAuthGuard} from "./guards/local.auth.guard";
-import {LocalStrategy} from "./strategy/local.strategy";
-import {PassportModule} from "@nestjs/passport";
+import { LocalAuthGuard } from './guards/local.auth.guard';
+import { LocalStrategy } from './strategy/local.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -18,13 +18,13 @@ import {PassportModule} from "@nestjs/passport";
         secret: process.env.JWT_SECRET,
         signOptions: {
           expiresIn: parseInt(
-              process.env.ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC
+            process.env.ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC,
           ),
         },
       }),
       inject: [ConfigService],
     }),
-    PassportModule
+    PassportModule,
   ],
   providers: [AuthService, JwtStrategy, LocalAuthGuard, LocalStrategy],
   controllers: [AuthController],

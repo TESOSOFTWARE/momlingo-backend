@@ -24,12 +24,15 @@ export class UsersService {
 
   create(userData: Partial<User>): Promise<User> {
     const user = this.usersRepository.create(userData);
-    console.log("create user");
+    console.log('create user');
     console.log(user);
     return this.usersRepository.save(user);
   }
 
-  update(userId: number, userInformation: Partial<User>): Promise<UpdateResult> {
+  update(
+    userId: number,
+    userInformation: Partial<User>,
+  ): Promise<UpdateResult> {
     return this.usersRepository.update(userId, userInformation);
   }
 }
