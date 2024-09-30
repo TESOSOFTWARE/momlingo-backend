@@ -1,3 +1,14 @@
-import { AccessToken } from '../types/AccessToken';
+import { IsString, IsObject, IsNotEmpty } from 'class-validator';
 
-export type RegisterResponseDTO = AccessToken;
+export class RegisterResponseDTO {
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string;
+
+  @IsObject()
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}

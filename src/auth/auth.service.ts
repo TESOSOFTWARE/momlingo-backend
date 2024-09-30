@@ -2,9 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from '../models/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../models/users/entities/user.entity';
-import { AccessToken } from './types/AccessToken';
-import { RegisterRequestDto } from './dtos/register.request.dto';
+import { RegisterRequestDTO } from './dtos/register.request.dto';
 import * as bcrypt from 'bcryptjs';
+import { LoginResponseDTO } from './dtos/login.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,19 +25,39 @@ export class AuthService {
     return user;
   }
 
-  async login(user: User): Promise<AccessToken> {
-    const payload = { email: user.email, id: user.id };
-    return { access_token: this.jwtService.sign(payload) };
+  async login(email: string, password: string): Promise<LoginResponseDTO> {
+    const user = await this.validateUser(email, password);
+    const payload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    return {
+      accessToken,
+      user: { id: user.id, name: user.name, email: user.email },
+    };
   }
 
-  async register(user: RegisterRequestDto): Promise<AccessToken> {
+  async register(user: RegisterRequestDTO): Promise<LoginResponseDTO> {
     const existingUser = await this.usersService.findOneByEmail(user.email);
     if (existingUser) {
       throw new BadRequestException('email already exists');
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUserData = { ...user, password: hashedPassword };
+    console.log(newUserData);
     const newUser = await this.usersService.create(newUserData);
-    return this.login(newUser);
+    const payload = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+    };
+    const accessToken = this.jwtService.sign(payload);
+
+    return {
+      accessToken,
+      user: { id: newUser.id, name: newUser.name, email: newUser.email },
+    };
   }
 }

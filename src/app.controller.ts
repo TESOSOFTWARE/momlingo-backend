@@ -1,7 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User } from './auth/decorators/user.decorator';
-import { AccessTokenPayload } from './auth/types/AccessTokenPayload';
 
 @Controller()
 export class AppController {

@@ -4,11 +4,10 @@ import {
   Controller,
   Post,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginResponseDTO } from './dtos/login.response.dto';
-import { RegisterRequestDto } from './dtos/register.request.dto';
+import { RegisterRequestDTO } from './dtos/register.request.dto';
 import { RegisterResponseDTO } from './dtos/register.response.dto';
 import { Public } from './decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
@@ -20,14 +19,15 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req): Promise<LoginResponseDTO | BadRequestException> {
-    console.log(req.user);
-    return this.authService.login(req.user);
+  async login(
+    @Body() loginDto: { email: string; password: string },
+  ): Promise<LoginResponseDTO | BadRequestException> {
+    return this.authService.login(loginDto.email, loginDto.password);
   }
 
   @Post('register')
   async register(
-    @Body() registerBody: RegisterRequestDto,
+    @Body() registerBody: RegisterRequestDTO,
   ): Promise<RegisterResponseDTO | BadRequestException> {
     return await this.authService.register(registerBody);
   }

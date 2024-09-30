@@ -1,4 +1,4 @@
-export type RegisterRequestDto = {
+export type RegisterRequestDTO = {
   name: string;
   email: string;
   password: string;
