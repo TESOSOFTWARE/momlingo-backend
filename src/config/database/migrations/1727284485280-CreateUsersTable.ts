@@ -11,6 +11,7 @@ export class CreateUsersTable1727284485280 implements MigrationInterface {
             type: 'int',
             isPrimary: true,
             isGenerated: true,
+            generationStrategy: 'increment',
           },
           {
             name: 'name',
@@ -24,17 +25,6 @@ export class CreateUsersTable1727284485280 implements MigrationInterface {
           {
             name: 'password',
             type: 'varchar',
-          },
-          {
-            name: 'createdAt',
-            type: 'timestamp',
-            default: 'CURRENT_TIMESTAMP',
-          },
-          {
-            name: 'updatedAt',
-            type: 'timestamp',
-            default: 'CURRENT_TIMESTAMP',
-            onUpdate: 'CURRENT_TIMESTAMP',
           },
         ],
       }),

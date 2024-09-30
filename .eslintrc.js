@@ -14,6 +14,10 @@ module.exports = {
     ],
     rules: {
         // Thêm hoặc tùy chỉnh các quy tắc ở đây
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        "@typescript-eslint/ban-ts-ignore": "off",
         '@typescript-eslint/no-explicit-any': 'off', //off|warn|error // Cảnh báo khi sử dụng any
         'prettier/prettier': 'error', // Lỗi nếu Prettier không đúng
     },

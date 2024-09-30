@@ -10,3 +10,6 @@
    yarn lint
 
 Note: Need create Database before run project with docker
+
+Node: v22.9.0
+yarn: 1.22.19

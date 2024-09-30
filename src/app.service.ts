@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User } from './models/users/entities/user.entity';
+import { UsersService } from './models/users/users.service';
 
 @Injectable()
 export class AppService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private usersService: UsersService,
+  ) {}
 
-  getHello(): string {
-    return 'Hello World!';
+  async getHello(userId: number): Promise<string> {
+    const user: User = await this.usersService.findOneById(userId);
+    return `Hello ${user.name}!`;
   }
 
   getCurrentEnvironment() {

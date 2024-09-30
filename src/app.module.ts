@@ -11,6 +11,9 @@ import { AuthModule } from './auth/auth.module';
 import typeOrmConfig from './config/database/mysql/typeorm.config';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtGuard } from './auth/guards/jwt.guard';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
 dotenv.config();
 
 @Module({
@@ -28,6 +31,14 @@ dotenv.config();
     AuthModule,
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtGuard,
+    },
+    AuthService,
+    JwtStrategy,
+  ],
 })
 export class AppModule {}
