@@ -6,6 +6,8 @@ import { RegisterRequestDTO } from './dtos/register.request.dto';
 import * as bcrypt from 'bcryptjs';
 import { LoginResponseDTO } from './dtos/login.response.dto';
 import axios from 'axios';
+import { LoginType } from '../enums/login-type.enum';
+import { UserRole } from '../enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -35,18 +37,6 @@ export class AuthService {
     return {
       accessToken,
       user: { id: newUser.id, name: newUser.name, email: newUser.email },
-    };
-  }
-
-  async loginWithGoogle(
-    email: string,
-    password: string,
-  ): Promise<LoginResponseDTO> {
-    const user = await this.validateUser(email, password);
-    const accessToken = this.generateToken(user);
-    return {
-      accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
     };
   }
 
@@ -86,41 +76,40 @@ export class AuthService {
     return user;
   }
 
-  /*async validateGoogleUser(profile: any): Promise<any> {
-    // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu không,
-    // nếu không thì tạo mới.
-    const { id, emails, displayName } = profile;
-    const email = emails[0].value;
-
-    // Ví dụ với UsersService để tìm hoặc tạo người dùng
-    const user = await this.findOrCreateUser({
-      googleId: id,
-      email,
-      displayName,
-    });
-
-    return user;
-  }*/
-
-  async findOrCreateUser(
-    email: string,
-    name: string,
-    picture?: string,
-  ): Promise<User> {
-    let user = await this.usersService.findOneByEmail(email);
-    if (!user) {
-      user = await this.usersService.create(user);
-    }
-    return user;
-  }
-
   generateToken(user: User): string {
     const payload = { email: user.email, id: user.id };
     return this.jwtService.sign(payload);
   }
 
-  // Google
-  async getNewAccessToken(refreshToken: string): Promise<string> {
+  // --- Google - start ---
+  async loginWithGoogle(
+    googleAccessToken: string,
+  ): Promise<LoginResponseDTO | BadRequestException> {
+    const googleProfile = await this.getGoogleProfile(googleAccessToken);
+    if (googleProfile) {
+      let userDb = await this.usersService.findOneByEmail(
+        googleProfile.data.email,
+      );
+      if (!userDb) {
+        userDb = await this.usersService.create({
+          name: googleProfile.data.name,
+          email: googleProfile.data.email,
+          avatarUrl: googleProfile.data.picture,
+          loginType: LoginType.GOOGLE,
+          role: UserRole.USER,
+        });
+      }
+      const accessToken = this.generateToken(userDb);
+      return {
+        accessToken,
+        user: { id: userDb.id, name: userDb.name, email: userDb.email },
+      };
+    } else {
+      throw new BadRequestException('Failed to revoke the google info');
+    }
+  }
+
+  async getNewGoogleAccessToken(refreshToken: string): Promise<string> {
     try {
       const response = await axios.post(
         'https://accounts.google.com/o/oauth2/token',
@@ -131,31 +120,28 @@ export class AuthService {
           grant_type: 'refresh_token',
         },
       );
-
       return response.data.access_token;
     } catch (error) {
       throw new Error('Failed to refresh the access token.');
     }
   }
 
-  async getProfile(token: string) {
+  async getGoogleProfile(accessToken: string) {
     try {
       return axios.get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${token}`,
+        `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`,
       );
     } catch (error) {
       console.error('Failed to revoke the token:', error);
     }
   }
 
-  async isTokenExpired(token: string): Promise<boolean> {
+  async isGoogleTokenExpired(token: string): Promise<boolean> {
     try {
       const response = await axios.get(
         `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`,
       );
-
       const expiresIn = response.data.expires_in;
-
       if (!expiresIn || expiresIn <= 0) {
         return true;
       }
@@ -173,4 +159,5 @@ export class AuthService {
       console.error('Failed to revoke the token:', error);
     }
   }
+  // --- Google - end ---
 }

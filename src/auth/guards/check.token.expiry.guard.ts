@@ -14,7 +14,8 @@ export class CheckTokenExpiryGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const accessToken = request.cookies['access_token'];
 
-    if (await this.authService.isTokenExpired(accessToken)) {
+    console.log(`accessToken : ${accessToken}`);
+    if (await this.authService.isGoogleTokenExpired(accessToken)) {
       const refreshToken = request.cookies['refresh_token'];
 
       if (!refreshToken) {
@@ -23,10 +24,11 @@ export class CheckTokenExpiryGuard implements CanActivate {
 
       try {
         const newAccessToken =
-          await this.authService.getNewAccessToken(refreshToken);
+          await this.authService.getNewGoogleAccessToken(refreshToken);
         request.res.cookie('access_token', newAccessToken, {
           httpOnly: true,
         });
+        console.log(`newAccessToken : ${newAccessToken}`);
         request.cookies['access_token'] = newAccessToken;
       } catch (error) {
         throw new UnauthorizedException('Failed to refresh token');

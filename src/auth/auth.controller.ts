@@ -25,6 +25,7 @@ import { CheckTokenExpiryGuard } from './guards/check.token.expiry.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  // --- Email - Pass start ---
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
@@ -39,13 +40,14 @@ export class AuthController {
   ): Promise<RegisterResponseDTO | BadRequestException> {
     return await this.authService.register(registerBody);
   }
+  // --- Email - Pass end ---
 
-  @Get('google')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuth(
-    @Body() accessToken: string,
+  // --- Google start ---
+  @Post('google')
+  async loginWithGoogle(
+    @Body() body: { accessToken: string },
   ): Promise<RegisterResponseDTO | BadRequestException> {
-    throw new UnauthorizedException('TODO googleAuth');
+    return await this.authService.loginWithGoogle(body.accessToken);
   }
 
   @Get('google/callback')
@@ -53,35 +55,36 @@ export class AuthController {
   googleAuthCallback(@Req() req, @Res() res) {
     const googleToken = req.user.accessToken;
     const googleRefreshToken = req.user.refreshToken;
-
     res.cookie('access_token', googleToken, { httpOnly: true });
     res.cookie('refresh_token', googleRefreshToken, {
       httpOnly: true,
     });
-
-    res.redirect('http://localhost:3000/auth/profile');
+    res.redirect('http://localhost:3000/auth/google/profile');
   }
 
   @UseGuards(CheckTokenExpiryGuard)
-  @Get('profile')
-  async getProfile(@Req() req) {
+  @Get('google/profile')
+  async getGoogleProfile(@Req() req) {
     const accessToken = req.cookies['access_token'];
-    if (accessToken)
-      return (await this.authService.getProfile(accessToken)).data;
-    throw new UnauthorizedException('No access token');
+    if (accessToken) {
+      return (await this.authService.getGoogleProfile(accessToken)).data;
+    } else {
+      throw new UnauthorizedException('No access token');
+    }
   }
 
-  @Get('logout')
+  @Get('google/logout')
   logout(@Req() req, @Res() res) {
-    const refreshToken = req.cookies['refresh_token'];
+    const refreshGoogleToken = req.cookies['refresh_token'];
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-    this.authService.revokeGoogleToken(refreshToken);
+    this.authService.revokeGoogleToken(refreshGoogleToken);
     res.redirect('http://localhost:3000/');
   }
+  // --- Google end ---
 
+  // --- Facebook start ---
   @Get('facebook')
-  @UseGuards(FacebookAuthGuard)
   async facebookAuth(
     @Body() accessToken: string,
   ): Promise<RegisterResponseDTO | BadRequestException> {
@@ -91,13 +94,12 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
   facebookAuthCallback(@Req() req, @Res() res) {
-    // Successful authentication, redirect or send response
-    // TODO with web login Facebook
     return res.redirect('/');
   }
+  // --- Facebook end ---
 
+  // --- Apple start ---
   @Get('apple')
-  @UseGuards(AppleAuthGuard)
   async appleAuth(
     @Body() accessToken: string,
   ): Promise<RegisterResponseDTO | BadRequestException> {
@@ -107,8 +109,7 @@ export class AuthController {
   @Get('apple/callback')
   @UseGuards(AppleAuthGuard)
   appleAuthCallback(@Req() req, @Res() res) {
-    // Successful authentication, redirect or send response
-    // TODO with web login Apple
     return res.redirect('/');
   }
+  // --- Apple end ---
 }
