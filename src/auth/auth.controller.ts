@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
+  Get, HttpStatus,
   Post,
   Req,
   Res,
@@ -93,7 +93,11 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
   facebookAuthCallback(@Req() req, @Res() res) {
-    return res.redirect('/');
+    console.log(req.user);
+    return {
+      statusCode: HttpStatus.OK,
+      data: req.user,
+    };
   }
   // --- Facebook end ---
 

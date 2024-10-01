@@ -9,6 +9,7 @@ import { LocalAuthGuard } from './guards/local.auth.guard';
 import { LocalStrategy } from './strategy/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategy/google.strategy';
+import { FacebookStrategy } from './strategy/facebook.strategy';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GoogleStrategy } from './strategy/google.strategy';
     LocalAuthGuard,
     LocalStrategy,
     GoogleStrategy,
+    FacebookStrategy,
   ],
   controllers: [AuthController],
   exports: [AuthService, JwtModule, LocalAuthGuard],
