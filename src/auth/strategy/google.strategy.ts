@@ -7,20 +7,38 @@ import { AuthService } from '../auth.service';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private authService: AuthService) {
     super({
-      clientID: 'YOUR_GOOGLE_CLIENT_ID',
-      clientSecret: 'YOUR_GOOGLE_CLIENT_SECRET',
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: 'http://localhost:3000/auth/google/callback',
       scope: ['profile', 'email'],
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any) {
-    const { email, displayName, photos } = profile;
-    const user = await this.authService.findOrCreateUser(
-      email,
-      displayName,
-      photos[0].value,
-    );
-    return user;
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: any,
+  ) {
+    const { name, emails, photos } = profile;
+
+    const user = {
+      email: emails[0].value,
+      firstName: name.givenName,
+      lastName: name.familyName,
+      picture: photos[0].value,
+      accessToken,
+      refreshToken,
+    };
+
+    done(null, user);
+  }
+
+  // make sure to add this or else you won't get the refresh token
+  authorizationParams(): { [key: string]: string } {
+    return {
+      access_type: 'offline',
+      prompt: 'consent',
+    };
   }
 }

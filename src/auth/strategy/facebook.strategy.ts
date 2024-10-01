@@ -1,3 +1,4 @@
+/*
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-facebook';
@@ -25,3 +26,4 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     // done(null, user);
   }
 }
+*/

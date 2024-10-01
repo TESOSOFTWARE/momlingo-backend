@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -14,10 +15,10 @@ import { RegisterRequestDTO } from './dtos/register.request.dto';
 import { RegisterResponseDTO } from './dtos/register.response.dto';
 import { Public } from './decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
-import { AuthGuard } from '@nestjs/passport';
 import { GoogleAuthGuard } from './guards/google.auth.guard';
 import { FacebookAuthGuard } from './guards/facebook.auth.guard';
 import { AppleAuthGuard } from './guards/apple.auth.guard';
+import { CheckTokenExpiryGuard } from './guards/check.token.expiry.guard';
 
 @Public()
 @Controller('auth')
@@ -44,15 +45,39 @@ export class AuthController {
   async googleAuth(
     @Body() accessToken: string,
   ): Promise<RegisterResponseDTO | BadRequestException> {
-    // Initiates the Google OAuth flow
+    throw new UnauthorizedException('TODO googleAuth');
   }
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   googleAuthCallback(@Req() req, @Res() res) {
-    // Successful authentication, redirect or send response
-    // TODO with web Google
-    return res.redirect('/');
+    const googleToken = req.user.accessToken;
+    const googleRefreshToken = req.user.refreshToken;
+
+    res.cookie('access_token', googleToken, { httpOnly: true });
+    res.cookie('refresh_token', googleRefreshToken, {
+      httpOnly: true,
+    });
+
+    res.redirect('http://localhost:3000/auth/profile');
+  }
+
+  @UseGuards(CheckTokenExpiryGuard)
+  @Get('profile')
+  async getProfile(@Req() req) {
+    const accessToken = req.cookies['access_token'];
+    if (accessToken)
+      return (await this.authService.getProfile(accessToken)).data;
+    throw new UnauthorizedException('No access token');
+  }
+
+  @Get('logout')
+  logout(@Req() req, @Res() res) {
+    const refreshToken = req.cookies['refresh_token'];
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    this.authService.revokeGoogleToken(refreshToken);
+    res.redirect('http://localhost:3000/');
   }
 
   @Get('facebook')
@@ -60,8 +85,7 @@ export class AuthController {
   async facebookAuth(
     @Body() accessToken: string,
   ): Promise<RegisterResponseDTO | BadRequestException> {
-    // Initiates the Facebook OAuth flow
-    // return await this.authService.loginWithFacebook(req);
+    throw new UnauthorizedException('TODO facebookAuth');
   }
 
   @Get('facebook/callback')
@@ -77,7 +101,7 @@ export class AuthController {
   async appleAuth(
     @Body() accessToken: string,
   ): Promise<RegisterResponseDTO | BadRequestException> {
-    // Initiates the Apple OAuth flow
+    throw new UnauthorizedException('TODO appleAuth');
   }
 
   @Get('apple/callback')

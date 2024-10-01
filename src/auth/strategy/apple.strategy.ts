@@ -1,3 +1,4 @@
+/*
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-apple';
@@ -29,3 +30,4 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
     return JSON.parse(buffer.toString());
   }
 }
+*/
