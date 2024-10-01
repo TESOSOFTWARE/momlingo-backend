@@ -58,7 +58,7 @@ export class CreateUsersTable1727284485280 implements MigrationInterface {
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
             onUpdate: 'CURRENT_TIMESTAMP',
-          }
+          },
         ],
       }),
     );
