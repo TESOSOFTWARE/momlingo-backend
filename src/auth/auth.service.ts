@@ -21,7 +21,7 @@ export class AuthService {
     const accessToken = this.generateToken(user);
     return {
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
+      user,
     };
   }
 
@@ -36,7 +36,7 @@ export class AuthService {
     const accessToken = this.generateToken(newUser);
     return {
       accessToken,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email },
+      user: newUser,
     };
   }
 
@@ -48,7 +48,7 @@ export class AuthService {
     const accessToken = this.generateToken(user);
     return {
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
+      user,
     };
   }
 
@@ -60,7 +60,7 @@ export class AuthService {
     const accessToken = this.generateToken(user);
     return {
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email },
+      user,
     };
   }
 
@@ -102,7 +102,7 @@ export class AuthService {
       const accessToken = this.generateToken(userDb);
       return {
         accessToken,
-        user: { id: userDb.id, name: userDb.name, email: userDb.email },
+        user: userDb,
       };
     } else {
       throw new BadRequestException('Failed to revoke the google info');

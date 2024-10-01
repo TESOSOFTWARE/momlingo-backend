@@ -1,4 +1,5 @@
-import { IsString, IsObject, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsObject } from 'class-validator';
+import { User } from '../../models/users/entities/user.entity';
 
 export class LoginResponseDTO {
   @IsString()
@@ -6,9 +7,5 @@ export class LoginResponseDTO {
   accessToken: string;
 
   @IsObject()
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  user: User;
 }

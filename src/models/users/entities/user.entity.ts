@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export class User {
@@ -19,7 +20,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
+  @Exclude()
   password?: string;
 
   @Column({ nullable: true })

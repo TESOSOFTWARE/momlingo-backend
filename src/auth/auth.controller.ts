@@ -12,7 +12,6 @@ import {
 import { AuthService } from './auth.service';
 import { LoginResponseDTO } from './dtos/login.response.dto';
 import { RegisterRequestDTO } from './dtos/register.request.dto';
-import { RegisterResponseDTO } from './dtos/register.response.dto';
 import { Public } from './decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { GoogleAuthGuard } from './guards/google.auth.guard';
@@ -37,7 +36,7 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() registerBody: RegisterRequestDTO,
-  ): Promise<RegisterResponseDTO | BadRequestException> {
+  ): Promise<LoginResponseDTO | BadRequestException> {
     return await this.authService.register(registerBody);
   }
   // --- Email - Pass end ---
@@ -46,7 +45,7 @@ export class AuthController {
   @Post('google')
   async loginWithGoogle(
     @Body() body: { accessToken: string },
-  ): Promise<RegisterResponseDTO | BadRequestException> {
+  ): Promise<LoginResponseDTO | BadRequestException> {
     return await this.authService.loginWithGoogle(body.accessToken);
   }
 
@@ -87,7 +86,7 @@ export class AuthController {
   @Get('facebook')
   async facebookAuth(
     @Body() accessToken: string,
-  ): Promise<RegisterResponseDTO | BadRequestException> {
+  ): Promise<LoginResponseDTO | BadRequestException> {
     throw new UnauthorizedException('TODO facebookAuth');
   }
 
@@ -102,7 +101,7 @@ export class AuthController {
   @Get('apple')
   async appleAuth(
     @Body() accessToken: string,
-  ): Promise<RegisterResponseDTO | BadRequestException> {
+  ): Promise<LoginResponseDTO | BadRequestException> {
     throw new UnauthorizedException('TODO appleAuth');
   }
 
