@@ -2,7 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get, HttpStatus,
+  Get,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -83,16 +84,16 @@ export class AuthController {
   // --- Google end ---
 
   // --- Facebook start ---
-  @Get('facebook')
+  @Post('facebook')
   async facebookAuth(
-    @Body() accessToken: string,
+    @Body() body: { accessToken: string },
   ): Promise<LoginResponseDTO | BadRequestException> {
-    throw new UnauthorizedException('TODO facebookAuth');
+    return await this.authService.loginWithFacebook(body.accessToken);
   }
 
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
-  facebookAuthCallback(@Req() req, @Res() res) {
+  facebookAuthCallback(@Req() req) {
     console.log(req.user);
     return {
       statusCode: HttpStatus.OK,

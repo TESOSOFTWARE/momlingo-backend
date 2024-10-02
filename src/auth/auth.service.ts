@@ -8,6 +8,7 @@ import { LoginResponseDTO } from './dtos/login.response.dto';
 import axios from 'axios';
 import { LoginType } from '../enums/login-type.enum';
 import { UserRole } from '../enums/user-role.enum';
+import { Buffer } from 'buffer/';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  // --- Email - start ---
   async login(email: string, password: string): Promise<LoginResponseDTO> {
     const user = await this.validateUser(email, password);
     const accessToken = this.generateToken(user);
@@ -39,47 +41,7 @@ export class AuthService {
       user: newUser,
     };
   }
-
-  async loginWithFacebook(
-    email: string,
-    password: string,
-  ): Promise<LoginResponseDTO> {
-    const user = await this.validateUser(email, password);
-    const accessToken = this.generateToken(user);
-    return {
-      accessToken,
-      user,
-    };
-  }
-
-  async loginWithApple(
-    email: string,
-    password: string,
-  ): Promise<LoginResponseDTO> {
-    const user = await this.validateUser(email, password);
-    const accessToken = this.generateToken(user);
-    return {
-      accessToken,
-      user,
-    };
-  }
-
-  async validateUser(email: string, password: string): Promise<User> {
-    const user: User = await this.usersService.findOneByEmail(email);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    const isMatch: boolean = bcrypt.compareSync(password, user.password);
-    if (!isMatch) {
-      throw new BadRequestException('Password does not match');
-    }
-    return user;
-  }
-
-  generateToken(user: User): string {
-    const payload = { email: user.email, id: user.id };
-    return this.jwtService.sign(payload);
-  }
+  // --- Email - end ---
 
   // --- Google - start ---
   async loginWithGoogle(
@@ -160,4 +122,79 @@ export class AuthService {
     }
   }
   // --- Google - end ---
+
+  // --- Facebook - start ---
+  async loginWithFacebook(
+    facebookAccessToken: string,
+  ): Promise<LoginResponseDTO | BadRequestException> {
+    const facebookProfile = await this.getFacebookProfile(facebookAccessToken);
+    if (facebookProfile) {
+      let userDb = await this.usersService.findOneByEmail(
+        facebookProfile.data.email,
+      );
+      if (!userDb) {
+        const name = Buffer.from(facebookProfile.data.name, 'utf-8').toString(
+          'utf-8',
+        );
+        userDb = await this.usersService.create({
+          name: name,
+          email: facebookProfile.data.email,
+          avatarUrl: facebookProfile.data.picture.data.url,
+          loginType: LoginType.FACEBOOK,
+          role: UserRole.USER,
+        });
+      }
+      const accessToken = this.generateToken(userDb);
+      return {
+        accessToken,
+        user: userDb,
+      };
+    } else {
+      throw new BadRequestException('Failed to revoke the google info');
+    }
+  }
+
+  async getFacebookProfile(accessToken: string) {
+    try {
+      return axios.get(
+        `https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token=${accessToken}`,
+      );
+    } catch (error) {
+      console.error('Failed to revoke the token:', error);
+    }
+  }
+
+  //  --- Facebook - end ---
+
+  // --- Apple - start ---
+  async loginWithApple(
+    email: string,
+    password: string,
+  ): Promise<LoginResponseDTO> {
+    const user = await this.validateUser(email, password);
+    const accessToken = this.generateToken(user);
+    return {
+      accessToken,
+      user,
+    };
+  }
+  // --- Apple - end ---
+
+  // Helper
+  async validateUser(email: string, password: string): Promise<User> {
+    const user: User = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const isMatch: boolean = bcrypt.compareSync(password, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Password does not match');
+    }
+    return user;
+  }
+
+  generateToken(user: User): string {
+    const payload = { email: user.email, id: user.id };
+    return this.jwtService.sign(payload);
+  }
 }

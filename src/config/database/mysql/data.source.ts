@@ -15,6 +15,9 @@ const AppDataSource = new DataSource({
   migrations: ['src/config/database/migrations/*.ts'],
   migrationsRun: false,
   logging: true,
+  extra: {
+    charset: 'utf8mb4', // utf8_unicode_ci
+  },
 });
 
 export default AppDataSource;
