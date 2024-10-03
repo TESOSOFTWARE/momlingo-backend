@@ -9,6 +9,7 @@ import axios from 'axios';
 import { LoginType } from '../enums/login-type.enum';
 import { UserRole } from '../enums/user-role.enum';
 import { Buffer } from 'buffer/';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
     const accessToken = this.generateToken(user);
     return {
       accessToken,
-      user,
+      user: plainToClass(User, user),
     };
   }
 
@@ -38,7 +39,7 @@ export class AuthService {
     const accessToken = this.generateToken(newUser);
     return {
       accessToken,
-      user: newUser,
+      user: plainToClass(User, newUser),
     };
   }
   // --- Email - end ---
@@ -64,7 +65,7 @@ export class AuthService {
       const accessToken = this.generateToken(userDb);
       return {
         accessToken,
-        user: userDb,
+        user: plainToClass(User, userDb),
       };
     } else {
       throw new BadRequestException('Failed to revoke the google info');
@@ -147,7 +148,7 @@ export class AuthService {
       const accessToken = this.generateToken(userDb);
       return {
         accessToken,
-        user: userDb,
+        user: plainToClass(User, userDb),
       };
     } else {
       throw new BadRequestException('Failed to revoke the google info');
@@ -175,7 +176,7 @@ export class AuthService {
     const accessToken = this.generateToken(user);
     return {
       accessToken,
-      user,
+      user: plainToClass(User, user),
     };
   }
   // --- Apple - end ---

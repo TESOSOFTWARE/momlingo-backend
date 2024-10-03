@@ -21,6 +21,7 @@ import { AppleAuthGuard } from './guards/apple.auth.guard';
 import { CheckTokenExpiryGuard } from './guards/check.token.expiry.guard';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginRequestDto } from './dtos/login.request.dto';
+import { SocialLoginRequestDto } from './dtos/social_login.request.dto';
 
 @ApiTags('Auth')
 @Public()
@@ -48,24 +49,12 @@ export class AuthController {
   // --- Email - Pass end ---
 
   // --- Google start ---
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        accessToken: {
-          type: 'string',
-          example: '',
-          description: 'Access token of gmail',
-        },
-      },
-      required: ['accessToken'],
-    },
-  })
+  @ApiBody({ type: SocialLoginRequestDto })
   @ApiResponse({ status: 200, description: 'Login successful.' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @Post('google')
   async loginWithGoogle(
-    @Body() body: { accessToken: string },
+    @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
     return await this.authService.loginWithGoogle(body.accessToken);
   }
@@ -94,19 +83,20 @@ export class AuthController {
   }
 
   @Get('google/logout')
-  logout(@Req() req, @Res() res) {
+  async logout(@Req() req, @Res() res) {
     const refreshGoogleToken = req.cookies['refresh_token'];
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-    this.authService.revokeGoogleToken(refreshGoogleToken);
+    await this.authService.revokeGoogleToken(refreshGoogleToken);
     res.redirect('http://localhost:3000/');
   }
   // --- Google end ---
 
   // --- Facebook start ---
+  @ApiBody({ type: SocialLoginRequestDto })
   @Post('facebook')
   async facebookAuth(
-    @Body() body: { accessToken: string },
+    @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
     return await this.authService.loginWithFacebook(body.accessToken);
   }
@@ -123,9 +113,10 @@ export class AuthController {
   // --- Facebook end ---
 
   // --- Apple start ---
+  @ApiBody({ type: SocialLoginRequestDto })
   @Get('apple')
   async appleAuth(
-    @Body() accessToken: string,
+    @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
     throw new UnauthorizedException('TODO appleAuth');
   }
