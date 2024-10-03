@@ -19,21 +19,26 @@ import { GoogleAuthGuard } from './guards/google.auth.guard';
 import { FacebookAuthGuard } from './guards/facebook.auth.guard';
 import { AppleAuthGuard } from './guards/apple.auth.guard';
 import { CheckTokenExpiryGuard } from './guards/check.token.expiry.guard';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoginRequestDto } from './dtos/login.request.dto';
 
+@ApiTags('Auth')
 @Public()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   // --- Email - Pass start ---
+  @ApiBody({ type: LoginRequestDto })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
-    @Body() loginDto: { email: string; password: string },
+    @Body() loginDto: LoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
     return this.authService.login(loginDto.email, loginDto.password);
   }
 
+  @ApiBody({ type: RegisterRequestDTO })
   @Post('register')
   async register(
     @Body() registerBody: RegisterRequestDTO,
@@ -43,6 +48,21 @@ export class AuthController {
   // --- Email - Pass end ---
 
   // --- Google start ---
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: '',
+          description: 'Access token of gmail',
+        },
+      },
+      required: ['accessToken'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Login successful.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
   @Post('google')
   async loginWithGoogle(
     @Body() body: { accessToken: string },
