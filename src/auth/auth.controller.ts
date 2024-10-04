@@ -118,7 +118,7 @@ export class AuthController {
   async appleAuth(
     @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
-    throw new UnauthorizedException('TODO appleAuth');
+    return await this.authService.loginWithApple(body.accessToken);
   }
 
   @Get('apple/callback')

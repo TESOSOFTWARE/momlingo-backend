@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../models/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../models/users/entities/user.entity';
@@ -10,6 +14,7 @@ import { LoginType } from '../enums/login-type.enum';
 import { UserRole } from '../enums/user-role.enum';
 import { Buffer } from 'buffer/';
 import { plainToClass } from 'class-transformer';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -168,21 +173,59 @@ export class AuthService {
   //  --- Facebook - end ---
 
   // --- Apple - start ---
-  async loginWithApple(
-    email: string,
-    password: string,
-  ): Promise<LoginResponseDTO> {
-    const user = await this.validateUser(email, password);
-    const accessToken = this.generateToken(user);
+  async loginWithApple(idToken: string): Promise<LoginResponseDTO> {
+    const userInfo = await this.decodeIdToken(idToken);
+    let userDb = await this.usersService.findOneByEmail(userInfo.email);
+    if (!userDb) {
+      userDb = await this.usersService.create({
+        name: `${userInfo.name.firstName} ${userInfo.name.lastName}`,
+        email: userInfo.email,
+        avatarUrl: '',
+        loginType: LoginType.APPLE,
+        role: UserRole.USER,
+      });
+    }
+    const accessToken = this.generateToken(userDb);
     return {
       accessToken,
-      user: plainToClass(User, user),
+      user: plainToClass(User, userDb),
     };
+  }
+
+  private async getApplePublicKeys() {
+    const response = await axios.get('https://appleid.apple.com/auth/keys');
+    return response.data.keys;
+  }
+
+  private async decodeIdToken(idToken: string) {
+    const publicKeys = await this.getApplePublicKeys();
+    const decodedHeader = jwt.decode(idToken, { complete: true }) as any;
+
+    if (!decodedHeader) {
+      throw new UnauthorizedException('Invalid ID token');
+    }
+
+    const kid = decodedHeader.header.kid;
+    const publicKey = publicKeys.find((key) => key.kid === kid);
+
+    if (!publicKey) {
+      throw new UnauthorizedException('Public key not found');
+    }
+
+    const key = jwt.sign({ alg: 'RS256', ...publicKey }, '', {
+      algorithm: 'RS256',
+    });
+
+    return jwt.verify(idToken, key, {
+      algorithms: ['RS256'],
+      audience: process.env.APPLE_CLIENT_ID,
+      issuer: 'https://appleid.apple.com',
+    });
   }
   // --- Apple - end ---
 
   // Helper
-  async validateUser(email: string, password: string): Promise<User> {
+  private async validateUser(email: string, password: string): Promise<User> {
     const user: User = await this.usersService.findOneByEmail(email);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -194,7 +237,7 @@ export class AuthService {
     return user;
   }
 
-  generateToken(user: User): string {
+  private generateToken(user: User): string {
     const payload = { email: user.email, id: user.id };
     return this.jwtService.sign(payload);
   }
