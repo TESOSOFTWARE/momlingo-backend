@@ -15,6 +15,7 @@ import { UserRole } from '../enums/user-role.enum';
 import { Buffer } from 'buffer/';
 import { plainToClass } from 'class-transformer';
 import * as jwt from 'jsonwebtoken';
+import { AppleJwtPayload } from './interfaces/apple.jwt.ayload';
 
 @Injectable()
 export class AuthService {
@@ -216,16 +217,26 @@ export class AuthService {
       algorithm: 'RS256',
     });
 
-    return jwt.verify(idToken, key, {
-      algorithms: ['RS256'],
-      audience: process.env.APPLE_CLIENT_ID,
-      issuer: 'https://appleid.apple.com',
-    });
+    try {
+      const decodedToken = jwt.verify(idToken, key, {
+        algorithms: ['RS256'],
+        audience: process.env.APPLE_CLIENT_ID,
+        issuer: 'https://appleid.apple.com',
+      }) as AppleJwtPayload;
+
+      // Extract email and name from the decoded token
+      const email = decodedToken.email;
+      const name = decodedToken.name;
+
+      return { email, name };
+    } catch (error) {
+      throw new Error('Invalid ID Token');
+    }
   }
   // --- Apple - end ---
 
   // Helper
-  private async validateUser(email: string, password: string): Promise<User> {
+  public async validateUser(email: string, password: string): Promise<User> {
     const user: User = await this.usersService.findOneByEmail(email);
     if (!user) {
       throw new BadRequestException('User not found');

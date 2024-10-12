@@ -13,6 +13,9 @@ RUN yarn install --frozen-lockfile
 # Sao chép mã nguồn
 COPY . .
 
+# Sao chép tệp .env.dev vào thư mục gốc của ứng dụng
+COPY .env.dev .env
+
 # Chạy nodemon
 CMD ["npx", "nodemon", "src/main.ts"]
 
