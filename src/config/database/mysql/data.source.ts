@@ -12,7 +12,7 @@ const AppDataSource = new DataSource({
   database: 'momlingo_db_dev',
   synchronize: false,
   entities: ['src/models/**/entities/*.entity.ts'],
-  migrations: ['src/config/database/migrations/*.ts'],
+  migrations: ['src/database/migrations/*.ts'],
   migrationsRun: false,
   logging: true,
   extra: {

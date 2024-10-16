@@ -22,9 +22,9 @@
     "docker:stg": "env-cmd -f .env.stg docker-compose up --build",
     "docker:prod": "env-cmd -f .env.prod docker-compose up --build",
     "typeorm": "typeorm",
-    "migration:run": "ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/database/mysql/data.source.ts",
-    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/database/mysql/data.source.ts",
-    "migration:generate": "ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d ./src/database/mysql/data.source.ts",
+    "migration:run": "ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/config/database/mysql/data.source.ts",
+    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/config/database/mysql/data.source.ts",
+    "migration:generate": "ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d ./src/config/database/mysql/data.source.ts",
     "migration:create": "cd ./src/database/migrations && typeorm-ts-node-commonjs migration:create"
   },
   "dependencies": {

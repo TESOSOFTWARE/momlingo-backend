@@ -7,10 +7,10 @@ const typeOrmConfig: TypeOrmModuleOptions = {
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  synchronize: false,
+  synchronize: process.env.NODE_ENV == 'dev',
   entities: ['src/models/**/entities/*.entity.ts'],
-  migrations: ['src/config/database/migrations/!*.ts'],
-  migrationsRun: false,
+  migrations: ['src/database/migrations/*.ts'],
+  migrationsRun: process.env.NODE_ENV == 'dev',
   logging: true,
   extra: {
     charset: 'utf8mb4', // utf8_unicode_ci

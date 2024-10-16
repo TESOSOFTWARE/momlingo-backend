@@ -32,20 +32,20 @@ export class User {
 
   @Column({ nullable: true })
   @Exclude()
-  password?: string;
+  password: string;
 
   @Column({ nullable: true })
-  avatarUrl?: string;
+  avatarUrl: string;
 
   @Column({ nullable: true })
   @Index()
-  phoneNumber?: string;
+  phoneNumber: string;
 
   @Column({ nullable: true })
-  deviceId?: string;
+  deviceId: string;
 
   @Column({ nullable: true })
-  deviceToken?: string;
+  deviceToken: string;
 
   @Column({
     type: 'enum',
@@ -75,7 +75,7 @@ export class User {
   })
   deviceType: DeviceType;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'partnerId' })
   partner: User;
 

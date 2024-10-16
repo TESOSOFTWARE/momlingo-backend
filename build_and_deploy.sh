@@ -76,5 +76,6 @@
 Create and Update Table and Run
 - yarn migration:create CreateUsersTable
 - yarn migration:create UpdateUserTable
+- yarn migration:generate ./src/database/migrations/CreateUsersTable
 - yarn migration:run
 
