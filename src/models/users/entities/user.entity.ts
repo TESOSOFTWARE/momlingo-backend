@@ -4,20 +4,30 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  Index,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
 import { Exclude } from 'class-transformer';
+import { Language } from '../../../enums/language.enum';
+import { DeviceType } from '../../../enums/device-type.enum';
 
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  partnerId: number;
+
   @Column()
+  @Index()
   name: string;
 
   @Column({ unique: true })
+  @Index()
   email: string;
 
   @Column({ nullable: true })
@@ -28,7 +38,14 @@ export class User {
   avatarUrl?: string;
 
   @Column({ nullable: true })
+  @Index()
   phoneNumber?: string;
+
+  @Column({ nullable: true })
+  deviceId?: string;
+
+  @Column({ nullable: true })
+  deviceToken?: string;
 
   @Column({
     type: 'enum',
@@ -43,6 +60,24 @@ export class User {
     default: LoginType.EMAIL,
   })
   loginType: LoginType;
+
+  @Column({
+    type: 'enum',
+    enum: Language,
+    default: Language.VI,
+  })
+  lan: Language;
+
+  @Column({
+    type: 'enum',
+    enum: DeviceType,
+    default: DeviceType.ANDROID,
+  })
+  deviceType: DeviceType;
+
+  @OneToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'partnerId' })
+  partner: User;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

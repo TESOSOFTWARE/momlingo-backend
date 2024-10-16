@@ -71,3 +71,10 @@
     - docker images
   Remove image
     - docker rmi <image_id>
+
+
+Create and Update Table and Run
+- yarn migration:create CreateUsersTable
+- yarn migration:create UpdateUserTable
+- yarn migration:run
+
