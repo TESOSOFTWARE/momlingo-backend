@@ -15,6 +15,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { ChildrenModule } from './models/children/children.module';
+import { UsersController } from './models/users/users.controller';
+import { UsersService } from './models/users/users.service';
 dotenv.config();
 
 @Module({
@@ -32,7 +34,7 @@ dotenv.config();
     ChildrenModule,
     AuthModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, UsersController],
   providers: [
     AppService,
     {
@@ -40,6 +42,7 @@ dotenv.config();
       useClass: JwtGuard,
     },
     AuthService,
+    UsersService,
     JwtStrategy,
   ],
 })

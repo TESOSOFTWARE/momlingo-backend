@@ -282,6 +282,10 @@ export class AuthService {
     return userWithChildren;
   }
 
+  async validateUserById(id: number): Promise<User | null> {
+    return this.usersService.findOneById(id);
+  }
+
   private generateToken(userWithChildren: UserWithChildren): string {
     const payload = { email: userWithChildren.email, id: userWithChildren.id };
     return this.jwtService.sign(payload);
