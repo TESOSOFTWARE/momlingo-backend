@@ -39,6 +39,7 @@
   - Install mysql then change account - pass
   - Install phpMyAdmin
   - Login to docker for pull image: docker login
+  - docker pull thaikvteso/momlingo-be-dev:latest
 
 6. Config project
   - Create application folder
@@ -64,6 +65,9 @@
   Run migration database on docker container
     - docker exec -it your-container-name yarn migration:run
     #EX: docker exec -it momlingo-be-dev-container yarn migration:run
+  Conect to docker id
+    - docker exec -it <container_id> /bin/sh
+    #Ex: docker exec -it 8b534dc7ebe2 /bin/sh
   Run srcipt on package.json
     - docker exec -it your-container-name yarn run your-migration-script
 
