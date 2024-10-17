@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
 } from 'typeorm';
 import { Gender } from '../../../enums/gender.enum';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'children' })
 export class Child {
@@ -33,6 +35,18 @@ export class Child {
     default: Gender.FEMALE,
   })
   gender: Gender;
+
+  @ManyToOne(() => User, (user) => user.childrenAsMother, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  mother: User;
+
+  @ManyToOne(() => User, (user) => user.childrenAsFather, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  father: User;
 
   @CreateDateColumn()
   createdAt: Date;

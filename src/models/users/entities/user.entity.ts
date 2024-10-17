@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  Index,
+  Index, OneToMany,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
@@ -13,6 +13,7 @@ import { Exclude } from 'class-transformer';
 import { Language } from '../../../enums/language.enum';
 import { DeviceType } from '../../../enums/device-type.enum';
 import { Gender } from '../../../enums/gender.enum';
+import {Child} from "../../children/entities/child.entity";
 
 @Entity({ name: 'users' })
 export class User {
@@ -82,6 +83,12 @@ export class User {
 
   @OneToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   partner: User;
+
+  @OneToMany(() => Child, (child) => child.mother)
+  childrenAsMother: Child[];
+
+  @OneToMany(() => Child, (child) => child.father)
+  childrenAsFather: Child[];
 
   @CreateDateColumn()
   createdAt: Date;
