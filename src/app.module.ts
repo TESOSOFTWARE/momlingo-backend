@@ -14,6 +14,7 @@ import * as dotenv from 'dotenv';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { ChildrenModule } from './models/children/children.module';
 dotenv.config();
 
 @Module({
@@ -28,6 +29,7 @@ dotenv.config();
       },
     }),
     UsersModule,
+    ChildrenModule,
     AuthModule,
   ],
   controllers: [AppController, AuthController],

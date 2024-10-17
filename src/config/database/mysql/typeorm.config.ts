@@ -12,9 +12,7 @@ const typeOrmConfig: TypeOrmModuleOptions = {
   migrations: ['src/database/migrations/*.ts'],
   migrationsRun: process.env.NODE_ENV == 'dev',
   logging: true,
-  extra: {
-    charset: 'utf8mb4', // utf8_unicode_ci
-  },
+  charset: 'utf8mb4', // utf8_unicode_ci
 };
 
 export default typeOrmConfig;

@@ -7,6 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v1');
   app.useGlobalGuards(new JwtGuard(app.get(Reflector)));
   app.use(cookieParser());
 
@@ -18,9 +19,8 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/v1/docs', app, document);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-
   await app.listen(3000);
 }
 bootstrap();

@@ -68,7 +68,7 @@ export class AuthController {
     res.cookie('refresh_token', googleRefreshToken, {
       httpOnly: true,
     });
-    res.redirect('http://localhost:3000/auth/google/profile');
+    res.redirect('http://localhost:3000/api/v1/auth/google/profile');
   }
 
   @UseGuards(CheckTokenExpiryGuard)
@@ -88,7 +88,7 @@ export class AuthController {
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
     await this.authService.revokeGoogleToken(refreshGoogleToken);
-    res.redirect('http://localhost:3000/');
+    res.redirect('http://localhost:3000/api/v1/');
   }
   // --- Google end ---
 

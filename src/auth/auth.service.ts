@@ -13,9 +13,9 @@ import axios from 'axios';
 import { LoginType } from '../enums/login-type.enum';
 import { UserRole } from '../enums/user-role.enum';
 import { Buffer } from 'buffer/';
-import { plainToClass } from 'class-transformer';
 import * as jwt from 'jsonwebtoken';
 import { AppleJwtPayload } from './interfaces/apple.jwt.ayload';
+import { UserWithChildren } from '../models/users/interfaces/user-with-children.interface';
 
 @Injectable()
 export class AuthService {
@@ -26,11 +26,11 @@ export class AuthService {
 
   // --- Email - start ---
   async login(email: string, password: string): Promise<LoginResponseDTO> {
-    const user = await this.validateUser(email, password);
-    const accessToken = this.generateToken(user);
+    const userWithChildren = await this.validateUser(email, password);
+    const accessToken = this.generateToken(userWithChildren);
     return {
       accessToken,
-      user: plainToClass(User, user),
+      user: userWithChildren,
     };
   }
 
@@ -41,11 +41,11 @@ export class AuthService {
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUserData = { ...user, password: hashedPassword };
-    const newUser = await this.usersService.create(newUserData);
-    const accessToken = this.generateToken(newUser);
+    const userWithChildren = await this.usersService.create(newUserData);
+    const accessToken = this.generateToken(await userWithChildren);
     return {
       accessToken,
-      user: plainToClass(User, newUser),
+      user: userWithChildren,
     };
   }
   // --- Email - end ---
@@ -56,22 +56,31 @@ export class AuthService {
   ): Promise<LoginResponseDTO | BadRequestException> {
     const googleProfile = await this.getGoogleProfile(googleAccessToken);
     if (googleProfile) {
-      let userDb = await this.usersService.findOneByEmail(
+      const user = await this.usersService.findOneByEmail(
         googleProfile.data.email,
       );
-      if (!userDb) {
-        userDb = await this.usersService.create({
-          name: googleProfile.data.name,
+      let userWithChildren;
+      if (user != null) {
+        userWithChildren =
+          await this.usersService.findUserWithPartnerAndChildrenByEmail(
+            googleProfile.data.email,
+          );
+      } else {
+        const name = Buffer.from(googleProfile.data.name, 'utf-8').toString(
+          'utf-8',
+        );
+        userWithChildren = await this.usersService.create({
+          name: name,
           email: googleProfile.data.email,
           avatarUrl: googleProfile.data.picture,
           loginType: LoginType.GOOGLE,
           role: UserRole.USER,
         });
       }
-      const accessToken = this.generateToken(userDb);
+      const accessToken = this.generateToken(userWithChildren);
       return {
         accessToken,
-        user: plainToClass(User, userDb),
+        user: userWithChildren,
       };
     } else {
       throw new BadRequestException('Failed to revoke the google info');
@@ -136,14 +145,20 @@ export class AuthService {
   ): Promise<LoginResponseDTO | BadRequestException> {
     const facebookProfile = await this.getFacebookProfile(facebookAccessToken);
     if (facebookProfile) {
-      let userDb = await this.usersService.findOneByEmail(
+      const user = await this.usersService.findOneByEmail(
         facebookProfile.data.email,
       );
-      if (!userDb) {
+      let userWithChildren;
+      if (user != null) {
+        userWithChildren =
+          await this.usersService.findUserWithPartnerAndChildrenByEmail(
+            facebookProfile.data.email,
+          );
+      } else {
         const name = Buffer.from(facebookProfile.data.name, 'utf-8').toString(
           'utf-8',
         );
-        userDb = await this.usersService.create({
+        userWithChildren = await this.usersService.create({
           name: name,
           email: facebookProfile.data.email,
           avatarUrl: facebookProfile.data.picture.data.url,
@@ -151,10 +166,11 @@ export class AuthService {
           role: UserRole.USER,
         });
       }
-      const accessToken = this.generateToken(userDb);
+
+      const accessToken = this.generateToken(userWithChildren);
       return {
         accessToken,
-        user: plainToClass(User, userDb),
+        user: userWithChildren,
       };
     } else {
       throw new BadRequestException('Failed to revoke the google info');
@@ -176,20 +192,31 @@ export class AuthService {
   // --- Apple - start ---
   async loginWithApple(idToken: string): Promise<LoginResponseDTO> {
     const userInfo = await this.decodeIdToken(idToken);
-    let userDb = await this.usersService.findOneByEmail(userInfo.email);
-    if (!userDb) {
-      userDb = await this.usersService.create({
-        name: `${userInfo.name.firstName} ${userInfo.name.lastName}`,
+    const user = await this.usersService.findOneByEmail(userInfo.email);
+    let userWithChildren;
+    if (user != null) {
+      userWithChildren =
+        await this.usersService.findUserWithPartnerAndChildrenByEmail(
+          userInfo.email,
+        );
+    } else {
+      const name = Buffer.from(
+        `${userInfo.name.firstName} ${userInfo.name.lastName}`,
+        'utf-8',
+      ).toString('utf-8');
+      userWithChildren = await this.usersService.create({
+        name: name,
         email: userInfo.email,
         avatarUrl: '',
         loginType: LoginType.APPLE,
         role: UserRole.USER,
       });
     }
-    const accessToken = this.generateToken(userDb);
+
+    const accessToken = this.generateToken(userWithChildren);
     return {
       accessToken,
-      user: plainToClass(User, userDb),
+      user: userWithChildren,
     };
   }
 
@@ -236,20 +263,27 @@ export class AuthService {
   // --- Apple - end ---
 
   // Helper
-  public async validateUser(email: string, password: string): Promise<User> {
-    const user: User = await this.usersService.findOneByEmail(email);
-    if (!user) {
+  public async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserWithChildren> {
+    const userWithChildren: UserWithChildren =
+      await this.usersService.findUserWithPartnerAndChildrenByEmail(email);
+    if (!userWithChildren) {
       throw new BadRequestException('User not found');
     }
-    const isMatch: boolean = bcrypt.compareSync(password, user.password);
+    const isMatch: boolean = bcrypt.compareSync(
+      password,
+      userWithChildren.password,
+    );
     if (!isMatch) {
       throw new BadRequestException('Password does not match');
     }
-    return user;
+    return userWithChildren;
   }
 
-  private generateToken(user: User): string {
-    const payload = { email: user.email, id: user.id };
+  private generateToken(userWithChildren: UserWithChildren): string {
+    const payload = { email: userWithChildren.email, id: userWithChildren.id };
     return this.jwtService.sign(payload);
   }
 }
