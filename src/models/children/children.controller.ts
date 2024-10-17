@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -13,6 +15,7 @@ import { JwtGuard } from '../../auth/guards/jwt.guard';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { LoginRequestDto } from '../../auth/dtos/login.request.dto';
+import { UpdateChildDto } from './dtos/update-child.dto';
 
 @Controller('children')
 @UseGuards(JwtGuard)
@@ -43,5 +46,22 @@ export class ChildrenController {
       },
       userId,
     );
+  }
+
+  @ApiBody({ type: UpdateChildDto })
+  @Patch(':id')
+  async updateChild(
+    @Param('id') id: number,
+    @Body() updateChildDto: UpdateChildDto,
+    @Req() req,
+  ): Promise<Child> {
+    const userId = req.user.id;
+    return this.childrenService.updateChild(id, updateChildDto, userId);
+  }
+
+  @Delete(':id')
+  async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
+    const userId = req.user.id;
+    return this.childrenService.deleteChild(id, userId);
   }
 }
