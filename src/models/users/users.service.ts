@@ -33,24 +33,4 @@ export class UsersService {
   ): Promise<UpdateResult> {
     return this.usersRepository.update(userId, userInformation);
   }
-
-  async setPartner(userId: number, partnerId: number): Promise<void> {
-    const user = await this.findOneById(userId);
-    const partner = await this.findOneById(partnerId);
-
-    if (!user || !partner) {
-      throw new Error('User or partner not found');
-    }
-
-    // Kiểm tra xem partner đã có ai không
-    if (partner.partnerId) {
-      throw new Error('This partner is already linked with someone else');
-    }
-
-    user.partnerId = partnerId;
-    partner.partnerId = userId; // Thiết lập quan hệ đôi chiều
-
-    await this.usersRepository.save(user);
-    await this.usersRepository.save(partner);
-  }
 }
