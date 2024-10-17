@@ -28,6 +28,7 @@ export class UsersService {
     await this.usersRepository.save(user);
     return {
       ...user,
+      partner: null,
       children: [],
     } as UserWithChildren;
   }
