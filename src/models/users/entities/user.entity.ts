@@ -26,8 +26,7 @@ export class User {
   @Index()
   name: string;
 
-  @Column()
-  @Index()
+  @Column({ unique: true })
   email: string;
 
   @Column({ nullable: true })
@@ -79,7 +78,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Gender,
-    default: Gender.FEMALE,
+    nullable: true
   })
   gender: Gender;
 

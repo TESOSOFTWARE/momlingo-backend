@@ -27,7 +27,7 @@
   - ssh -i path/to/your/key.pem ubuntu@your_instance_ip
     For first time on Mac: chmod 400 path/to/your/key.pem
   Ex:
-  ssh -i /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem ec2-user@52.221.248.26
+  ssh -i /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
   ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
 
   chmod 400 /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem
@@ -76,10 +76,41 @@
   Remove image
     - docker rmi <image_id>
 
+9. Backup database before deployment
+  Create backup
+    - mysqldump -u username -p database_name > /path/to/your/backup_file.sql
+    #Ex: mysqldump -u root -p momlingo_db_dev > momlingo_db_dev_backup.sql
+    # /path/to/your ==
+  Backup
+    - mysql -u username -p database_name < backup_file.sql
+    #Ex: mysql -u username -p momlingo_db_dev < momlingo_db_dev_backup.sql
+
+Overal Step
+  - docker-compose --env-file .env.dev build
+  - docker tag momlingo-backend_app:latest thaikvteso/momlingo-be-dev:latest
+  - docker push thaikvteso/momlingo-be-dev:latest
+  - ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
+  - cd to project folder
+  - docker pull thaikvteso/momlingo-be-dev:latest
+  + mysqldump -u root -p momlingo_db_dev > momlingo_db_dev_backup.sql
+  - docker-compose --env-file .env.dev down
+  - docker-compose --env-file .env.dev up
 
 Create and Update Table and Run
 - yarn migration:create CreateUsersTable
 - yarn migration:create UpdateUserTable
 - yarn migration:generate ./src/database/migrations/CreateUsersTable
 - yarn migration:run
+
+10. Remove all containers
+  - docker rm -f $(docker ps -a -q)
+
+11. Remove all images
+  - docker rmi -f $(docker images -q)
+
+12. Remove all volumes
+  - docker volume rm $(docker volume ls -q)
+
+13. Remove all networks
+  - docker network rm $(docker network ls -q)
 
