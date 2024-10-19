@@ -26,7 +26,7 @@ export class Child {
   @Column({ nullable: true })
   avatarUrl: string;
 
-  @Column({ type: 'timestamp' })
+  @CreateDateColumn()
   dateOfBirth: Date;
 
   @Column({
