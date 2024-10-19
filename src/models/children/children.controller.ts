@@ -14,7 +14,6 @@ import { Child } from './entities/child.entity';
 import { JwtGuard } from '../../auth/guards/jwt.guard';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { LoginRequestDto } from '../../auth/dtos/login.request.dto';
 import { UpdateChildDto } from './dtos/update-child.dto';
 
 @Controller('children')
