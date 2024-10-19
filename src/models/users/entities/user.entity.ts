@@ -33,7 +33,7 @@ export class User {
   @Exclude()
   password: string;
 
-  @Column({ nullable: true })
+  @Column('text',{ nullable: true })
   avatarUrl: string;
 
   @Column({ nullable: true })

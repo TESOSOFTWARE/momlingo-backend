@@ -23,7 +23,7 @@ export class Child {
   @Index()
   nickname: string;
 
-  @Column({ nullable: true })
+  @Column('text', { nullable: true })
   avatarUrl: string;
 
   @CreateDateColumn()
