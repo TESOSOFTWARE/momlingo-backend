@@ -19,7 +19,7 @@ export class Child {
   @Index()
   name: string;
 
-  @Column({nullable: true })
+  @Column({ nullable: true })
   @Index()
   nickname: string;
 

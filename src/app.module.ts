@@ -17,6 +17,9 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { ChildrenModule } from './models/children/children.module';
 import { UsersController } from './models/users/users.controller';
 import { UsersService } from './models/users/users.service';
+import { FileUploadModule } from './models/file-upload/file-upload.module';
+import { FileUploadController } from './models/file-upload/file-upload.controller';
+import { FileUploadService } from './models/file-upload/file-upload.service';
 dotenv.config();
 
 @Module({
@@ -33,8 +36,9 @@ dotenv.config();
     UsersModule,
     ChildrenModule,
     AuthModule,
+    FileUploadModule
   ],
-  controllers: [AppController, AuthController, UsersController],
+  controllers: [AppController, AuthController, UsersController, FileUploadController],
   providers: [
     AppService,
     {
@@ -44,6 +48,7 @@ dotenv.config();
     AuthService,
     UsersService,
     JwtStrategy,
+    FileUploadService,
   ],
 })
 export class AppModule {}

@@ -33,7 +33,7 @@ export class User {
   @Exclude()
   password: string;
 
-  @Column('text',{ nullable: true })
+  @Column('text', { nullable: true })
   avatarUrl: string;
 
   @Column({ nullable: true })
@@ -78,7 +78,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Gender,
-    nullable: true
+    nullable: true,
   })
   gender: Gender;
 
