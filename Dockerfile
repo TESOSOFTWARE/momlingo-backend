@@ -10,7 +10,7 @@ COPY package.json yarn.lock ./
 # Cài đặt các phụ thuộc
 RUN yarn install --frozen-lockfile
 
-RUN yarn global add nodemon
+#RUN yarn global add nodemon
 
 # Sao chép mã nguồn
 COPY . .
