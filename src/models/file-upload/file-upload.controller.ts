@@ -2,27 +2,29 @@ import {
   Controller,
   Post,
   UseInterceptors,
-  UploadedFiles,
-  Delete,
-  Param, UseGuards, UploadedFile, Get,
+  UseGuards,
+  UploadedFile,
 } from '@nestjs/common';
-import { FileUploadService } from './file-upload.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileUploadService, getMulterOptions } from './file-upload.service';
 import { JwtGuard } from '../../auth/guards/jwt.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('upload')
 @UseGuards(JwtGuard)
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
-  @Get('user-avatar')
-  // @UseInterceptors(
-  //   FileInterceptor('avatar',  this.fileUploadService.uploadUserAvatar()).caller,
-  // )
-  uploadUserAvatar(@UploadedFile() file: Express.Multer.File) {
-    console.log("file.filename:");
-    console.log(file.filename);
+  @Post('user-avatar')
+  @UseInterceptors(FileInterceptor('avatar', getMulterOptions('user-avatars')))
+  async uploadUserAvatar(@UploadedFile() file: Express.Multer.File) {
+    // const savedFile = await this.fileUploadService.saveFile(file);
+    return { message: 'Avatar uploaded successfully', file: file.path };
+  }
 
-    return file.filename;
+  @Post('child-avatar')
+  @UseInterceptors(FileInterceptor('avatar', getMulterOptions('child-avatars')))
+  async uploadChildAvatar(@UploadedFile() file: Express.Multer.File) {
+    // const savedFile = await this.fileUploadService.saveFile(file);
+    return { message: 'Avatar uploaded successfully', file: file.path };
   }
 }

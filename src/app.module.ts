@@ -36,9 +36,14 @@ dotenv.config();
     UsersModule,
     ChildrenModule,
     AuthModule,
-    FileUploadModule
+    FileUploadModule,
   ],
-  controllers: [AppController, AuthController, UsersController, FileUploadController],
+  controllers: [
+    AppController,
+    AuthController,
+    UsersController,
+    FileUploadController,
+  ],
   providers: [
     AppService,
     {

@@ -96,6 +96,9 @@ Overal Step
   - docker-compose --env-file .env.dev down
   - docker-compose --env-file .env.dev up
 
+Clear cache
+  - docker-compose --env-file .env.dev build --no-cache
+
 Create and Update Table and Run
 - yarn migration:create CreateUsersTable
 - yarn migration:create UpdateUserTable
