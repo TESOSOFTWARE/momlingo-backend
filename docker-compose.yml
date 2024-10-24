@@ -28,8 +28,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - .:/app
-    command: npx nodemon src/main.ts
+      - .:/usr/src/app
+
     environment:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}

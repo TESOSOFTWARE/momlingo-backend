@@ -10,11 +10,10 @@ COPY package.json yarn.lock ./
 # Cài đặt các phụ thuộc
 RUN yarn install --frozen-lockfile
 
+RUN yarn global add nodemon
+
 # Sao chép mã nguồn
 COPY . .
-
-# Chạy nodemon
-CMD ["npx", "nodemon", "src/main.ts"]
 
 # Biên dịch ứng dụng
 RUN yarn build
@@ -22,5 +21,5 @@ RUN yarn build
 # Mở cổng cho ứng dụng
 EXPOSE 3000
 
-# Chạy ứng dụng
-CMD ["yarn", "start:prod"]
+# Chạy nodemon để theo dõi thay đổi trong mã nguồn
+CMD ["npx", "nodemon", "--watch", ".", "src/main.ts"]
