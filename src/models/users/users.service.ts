@@ -3,6 +3,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 import { UserWithChildren } from './interfaces/user-with-children.interface';
+import { UpdateUserDto } from './dtos/update_user.dto';
 
 @Injectable()
 export class UsersService {
@@ -33,11 +34,9 @@ export class UsersService {
     } as UserWithChildren;
   }
 
-  update(
-    userId: number,
-    userInformation: Partial<User>,
-  ): Promise<UpdateResult> {
-    return this.usersRepository.update(userId, userInformation);
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    await this.usersRepository.update(id, updateUserDto);
+    return this.usersRepository.findOneBy({ id });
   }
 
   async findUserWithPartnerAndChildrenById(
