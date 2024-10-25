@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from './models/users/entities/user.entity';
-import { UsersService } from './models/users/users.service';
+import { User } from './modules/user/entities/user.entity';
+import { UsersService } from './modules/user/users.service';
 
 @Injectable()
 export class AppService {

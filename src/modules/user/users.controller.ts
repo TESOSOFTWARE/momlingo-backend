@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserWithChildren } from './interfaces/user-with-children.interface';
 import { UsersService } from './users.service';
-import { JwtGuard } from '../../auth/guards/jwt.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUserDto } from './dtos/update_user.dto';
 import * as fs from 'fs';

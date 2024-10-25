@@ -6,7 +6,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileUploadService, getMulterOptions } from './file-upload.service';
-import { JwtGuard } from '../../auth/guards/jwt.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('upload')

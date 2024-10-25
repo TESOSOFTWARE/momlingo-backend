@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsObject } from 'class-validator';
-import { UserWithChildren } from '../../models/users/interfaces/user-with-children.interface';
+import { UserWithChildren } from '../../user/interfaces/user-with-children.interface';
 
 export class LoginResponseDTO {
   @IsString()

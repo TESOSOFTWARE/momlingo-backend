@@ -8,7 +8,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Gender } from '../../../enums/gender.enum';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'children' })
 export class Child {

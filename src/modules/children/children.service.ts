@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { Gender } from '../../enums/gender.enum';
-import { User } from '../users/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
 
 @Injectable()

@@ -3,19 +3,19 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from '../models/users/users.service';
+import { UsersService } from '../user/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../models/users/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { RegisterRequestDTO } from './dtos/register.request.dto';
 import * as bcrypt from 'bcryptjs';
 import { LoginResponseDTO } from './dtos/login.response.dto';
 import axios from 'axios';
-import { LoginType } from '../enums/login-type.enum';
-import { UserRole } from '../enums/user-role.enum';
+import { LoginType } from '../../enums/login-type.enum';
+import { UserRole } from '../../enums/user-role.enum';
 import { Buffer } from 'buffer/';
 import * as jwt from 'jsonwebtoken';
 import { AppleJwtPayload } from './interfaces/apple.jwt.ayload';
-import { UserWithChildren } from '../models/users/interfaces/user-with-children.interface';
+import { UserWithChildren } from '../user/interfaces/user-with-children.interface';
 
 @Injectable()
 export class AuthService {

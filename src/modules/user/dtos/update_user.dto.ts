@@ -4,22 +4,22 @@ import { Gender } from '../../../enums/gender.enum';
 import { Language } from '../../../enums/language.enum';
 
 export class UpdateUserDto {
-  @ApiProperty({ example: 'Le Van A'})
+  @ApiProperty({ example: 'Le Van A' })
   @IsString()
   @IsOptional()
   name?: string;
 
-  @ApiProperty({ example: '123456789'})
+  @ApiProperty({ example: '123456789' })
   @IsString()
   @IsOptional()
   phoneNumber?: string;
 
-  @ApiProperty({ example: 'female'})
+  @ApiProperty({ example: 'female' })
   @IsEnum(Gender)
   @IsOptional()
   gender?: Gender;
 
-  @ApiProperty({ example: 'vi'})
+  @ApiProperty({ example: 'vi' })
   @IsEnum(Language)
   @IsOptional()
   lan?: Language;
@@ -36,9 +36,8 @@ export class UpdateUserDto {
   @IsOptional()
   avatarUrl?: string;
 
-  @ApiProperty({ example: 1})
+  @ApiProperty({ example: 1 })
   @IsInt()
   @IsOptional()
   partnerId?: number;
-
 }

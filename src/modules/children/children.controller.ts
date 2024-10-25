@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ChildrenService } from './children.service';
 import { Child } from './entities/child.entity';
-import { JwtGuard } from '../../auth/guards/jwt.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { UpdateChildDto } from './dtos/update-child.dto';

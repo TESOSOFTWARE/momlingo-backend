@@ -3,7 +3,7 @@ import { ChildrenService } from './children.service';
 import { ChildrenController } from './children.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Child } from './entities/child.entity';
-import { User } from '../users/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Child, User])],
