@@ -11,7 +11,7 @@ const AppDataSource = new DataSource({
   password: '12345678',
   database: 'momlingo_db_dev',
   synchronize: false,
-  entities: ['src/models/**/entities/*.entity.ts'],
+  entities: ['src/modules/**/entities/*.entity.ts'],
   migrations: ['src/database/migrations/*.ts'],
   migrationsRun: false,
   logging: true,

@@ -1,42 +1,34 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { Gender } from '../../../enums/gender.enum';
 import { Language } from '../../../enums/language.enum';
 
 export class UpdateUserDto {
-  @ApiProperty({ example: 'Le Van A' })
+  @ApiPropertyOptional({ example: 'Le Van A' })
   @IsString()
   @IsOptional()
   name?: string;
 
-  @ApiProperty({ example: '123456789' })
+  @ApiPropertyOptional({ example: '123456789' })
   @IsString()
   @IsOptional()
   phoneNumber?: string;
 
-  @ApiProperty({ example: 'female' })
+  @ApiPropertyOptional({ example: 'female' })
   @IsEnum(Gender)
   @IsOptional()
   gender?: Gender;
 
-  @ApiProperty({ example: 'vi' })
+  @ApiPropertyOptional({ example: 'vi' })
   @IsEnum(Language)
   @IsOptional()
   lan?: Language;
 
-  @IsString()
-  @IsOptional()
-  deviceId?: string;
-
-  @IsString()
-  @IsOptional()
-  deviceToken?: string;
-
-  @IsString()
+  @ApiPropertyOptional({ type: 'string', format: 'binary', name: 'avatar' })
   @IsOptional()
   avatarUrl?: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiPropertyOptional({ example: 1 })
   @IsInt()
   @IsOptional()
   partnerId?: number;

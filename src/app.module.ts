@@ -11,7 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import typeOrmConfig from './config/database/mysql/typeorm.config';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './modules/auth/guards/jwt.guard';
 import { JwtStrategy } from './modules/auth/strategy/jwt.strategy';
 import { ChildrenModule } from './modules/children/children.module';
@@ -20,6 +20,7 @@ import { UsersService } from './modules/user/users.service';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { FileUploadController } from './modules/file-upload/file-upload.controller';
 import { FileUploadService } from './modules/file-upload/file-upload.service';
+import { AllExceptionFilter } from './common/filters/all-exception.filter';
 dotenv.config();
 
 @Module({
@@ -49,6 +50,10 @@ dotenv.config();
     {
       provide: APP_GUARD,
       useClass: JwtGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionFilter,
     },
     AuthService,
     UsersService,

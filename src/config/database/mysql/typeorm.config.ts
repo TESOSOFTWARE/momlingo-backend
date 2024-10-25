@@ -8,7 +8,7 @@ const typeOrmConfig: TypeOrmModuleOptions = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   synchronize: false,
-  entities: ['src/models/**/entities/*.entity.ts'],
+  entities: ['src/modules/**/entities/*.entity.ts'],
   migrations: ['src/database/migrations/*.ts'],
   migrationsRun: false,
   logging: true,

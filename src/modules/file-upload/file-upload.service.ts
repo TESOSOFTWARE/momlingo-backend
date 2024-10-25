@@ -8,7 +8,10 @@ import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer
 export class FileUploadService {
   deleteFile(fullPath: string): void {
     try {
-      unlinkSync(fullPath);
+      const uploadsIndex = fullPath.indexOf('uploads');
+      if (uploadsIndex !== -1) {
+        unlinkSync(fullPath.slice(uploadsIndex));
+      }
     } catch (error) {
       throw new NotFoundException(`File at ${fullPath} not found`);
     }
