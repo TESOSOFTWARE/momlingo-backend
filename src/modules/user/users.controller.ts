@@ -19,9 +19,25 @@ import {
   FileUploadService,
   getMulterOptions,
 } from '../file-upload/file-upload.service';
-import { ApiBearerAuth, ApiConsumes, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { User } from './entities/user.entity';
 
 @Controller('users')
+@ApiBearerAuth()
+@ApiResponse({
+  status: 400,
+  description:
+    'Lỗi 400 hoặc các lỗi khác sẽ trả về dạng: {\n' +
+    '    "success": false,\n' +
+    '    "statusCode": 500,\n' +
+    '    "message"": "Internal server error"\n' +
+    '}',
+})
 @UseGuards(JwtGuard)
 export class UsersController {
   constructor(
@@ -30,17 +46,33 @@ export class UsersController {
   ) {}
 
   @Get(':id')
-  async getUser(@Param('id') id: number): Promise<UserWithChildren> {
-    return this.usersService.findUserWithPartnerAndChildrenById(id);
+  @ApiOperation({
+    summary:
+      'Lấy thông tin cơ bản của bất kì user nào theo id, không có thông tin children',
+  })
+  async getUser(@Param('id') id: number): Promise<User> {
+    return this.usersService.findOneById(id);
+  }
+
+  @Get('profile')
+  @ApiOperation({
+    summary: 'Lấy thông tin cơ bản của của chính mình, có thông tin children',
+  })
+  async getProfile(@Req() req): Promise<UserWithChildren> {
+    const userId = req.user.id;
+    return this.usersService.findUserWithPartnerAndChildrenById(userId);
   }
 
   @Get()
-  async getAllUsers() {
+  @ApiOperation({
+    summary: 'Lấy tất cả danh sách user, không có children, dành cho Admin',
+  })
+  async getAllUsers(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   @Put(':id')
-  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cập nhật thông tin user' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('avatar', getMulterOptions('user-avatars')))
   @ApiResponse({
@@ -71,6 +103,6 @@ export class UsersController {
     const updatedUser = { ...currentUser, ...updateUserDto };
 
     await this.usersService.updateUser(id, updatedUser);
-    return this.getUser(id);
+    return this.getProfile(req);
   }
 }

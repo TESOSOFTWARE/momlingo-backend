@@ -22,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : exception.getResponse();
 
     response.status(status).json({
-      success: false, // Thêm trường success
+      success: false,
       statusCode: status,
       message,
     });

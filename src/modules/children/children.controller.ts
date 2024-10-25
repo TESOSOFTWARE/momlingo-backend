@@ -13,10 +13,11 @@ import { ChildrenService } from './children.service';
 import { Child } from './entities/child.entity';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { CreateChildDto } from './dtos/create-child.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { UpdateChildDto } from './dtos/update-child.dto';
 
 @Controller('children')
+@ApiBearerAuth()
 @UseGuards(JwtGuard)
 export class ChildrenController {
   constructor(private readonly childrenService: ChildrenService) {}
