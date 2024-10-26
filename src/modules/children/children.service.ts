@@ -25,6 +25,12 @@ export class ChildrenService {
     return this.childrenRepository.find();
   }
 
+  findAllByUserId(userId: number): Promise<Child[]> {
+    return this.childrenRepository.find({
+      where: [{ mother: { id: userId } }, { father: { id: userId } }],
+    });
+  }
+
   findOneById(id: number): Promise<Child | null> {
     return this.childrenRepository.findOneBy({ id });
   }
@@ -42,7 +48,7 @@ export class ChildrenService {
   }
 
   async createChild(
-    createChildDto: CreateChildDto & { dateOfBirth: Date },
+    createChildDto: CreateChildDto,
     userId: number,
   ): Promise<Child> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
@@ -51,26 +57,10 @@ export class ChildrenService {
     }
     const child = this.childrenRepository.create({
       ...createChildDto,
-      dateOfBirth: createChildDto.dateOfBirth,
       mother: user.gender === 'female' ? user : null,
       father: user.gender === 'male' ? user : null,
     });
-    const savedChild = await this.childrenRepository.save(child);
-    const mother = savedChild.mother
-      ? await this.usersRepository.findOne({
-          where: { id: savedChild.mother.id },
-        })
-      : null;
-    const father = savedChild.father
-      ? await this.usersRepository.findOne({
-          where: { id: savedChild.father.id },
-        })
-      : null;
-    return {
-      ...savedChild,
-      mother,
-      father,
-    };
+    return await this.childrenRepository.save(child);
   }
 
   async updateChild(
@@ -85,9 +75,6 @@ export class ChildrenService {
     const child = await this.childrenRepository.findOne({ where: { id } });
     if (!child) {
       throw new NotFoundException('Child not found');
-    }
-    if (updateChildDto.dateOfBirth) {
-      child.dateOfBirth = new Date(updateChildDto.dateOfBirth);
     }
     Object.assign(child, updateChildDto);
     return this.childrenRepository.save(child);

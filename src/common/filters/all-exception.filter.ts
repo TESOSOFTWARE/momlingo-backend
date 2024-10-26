@@ -4,7 +4,6 @@ import {
   HttpException,
   ArgumentsHost,
   HttpStatus,
-  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -13,27 +12,34 @@ export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    let status: number;
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+
     let message: string;
+    let error: string;
 
     if (exception instanceof HttpException) {
-      // Nếu là HttpException, lấy status và message
-      status = exception.getStatus();
-      message = exception.getResponse() as string;
-    } else if (exception instanceof NotFoundException) {
-      // Xử lý NotFoundException riêng
-      status = HttpStatus.NOT_FOUND;
-      message = 'Resource not found';
+      const responseBody = exception.getResponse();
+      if (Array.isArray((responseBody as any).message)) {
+        message = (responseBody as any).message[0];
+      } else {
+        message = (responseBody as any).message || responseBody;
+      }
+      error = (responseBody as any).error || 'Unknown Error';
+    } else if (exception instanceof Error) {
+      message = exception.message;
+      error = 'Internal Server Error';
     } else {
-      // Nếu không phải là HttpException, trả về 500
-      status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = 'Internal server error';
+      error = 'Internal Server Error';
     }
 
     response.status(status).json({
-      success: false,
+      message: message,
+      error: error,
       statusCode: status,
-      message,
     });
   }
 }

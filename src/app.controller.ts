@@ -1,25 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { User } from './modules/auth/decorators/user.decorator';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'Mặc định, trả về thông tin môi trường đang chạy',
+  })
   getCurrentEnv(): string {
     return this.appService.getCurrentEnvironment();
   }
-
-  @Get()
-  async getHello(@User() user): Promise<string> {
-    return await this.appService.getHello(user.id);
-  }
-
-  // @Get()
-  // async getHello(@Request() req): Promise<string> {
-  //   const accessTokenPayload: AccessTokenPayload =
-  //       req.user as AccessTokenPayload;
-  //   return await this.appService.getHello(accessTokenPayload.userId);
-  // }
 }

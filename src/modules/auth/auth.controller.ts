@@ -19,7 +19,7 @@ import { GoogleAuthGuard } from './guards/google.auth.guard';
 import { FacebookAuthGuard } from './guards/facebook.auth.guard';
 import { AppleAuthGuard } from './guards/apple.auth.guard';
 import { CheckTokenExpiryGuard } from './guards/check.token.expiry.guard';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { SocialLoginRequestDto } from './dtos/social_login.request.dto';
 
@@ -30,17 +30,23 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   // --- Email - Pass start ---
+  @Post('login')
   @ApiBody({ type: LoginRequestDto })
   @UseGuards(LocalAuthGuard)
-  @Post('login')
+  @ApiOperation({
+    summary: 'Đăng nhập với email - password. Dành cho Admin',
+  })
   async login(
     @Body() loginDto: LoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
     return this.authService.login(loginDto.email, loginDto.password);
   }
 
-  @ApiBody({ type: RegisterRequestDTO })
   @Post('register')
+  @ApiBody({ type: RegisterRequestDTO })
+  @ApiOperation({
+    summary: 'Đăng ký tài khoản với email - password. Dành cho Admin',
+  })
   async register(
     @Body() registerBody: RegisterRequestDTO,
   ): Promise<LoginResponseDTO | BadRequestException> {
@@ -49,10 +55,13 @@ export class AuthController {
   // --- Email - Pass end ---
 
   // --- Google start ---
+  @Post('google')
   @ApiBody({ type: SocialLoginRequestDto })
   @ApiResponse({ status: 200, description: 'Login successful.' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
-  @Post('google')
+  @ApiOperation({
+    summary: 'Đăng nhập Gmail qua API',
+  })
   async loginWithGoogle(
     @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
@@ -61,6 +70,9 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
+  @ApiOperation({
+    summary: 'Đăng nhập qua Gmail trên Web',
+  })
   googleAuthCallback(@Req() req, @Res() res) {
     const googleToken = req.user.accessToken;
     const googleRefreshToken = req.user.refreshToken;
@@ -68,11 +80,14 @@ export class AuthController {
     res.cookie('refresh_token', googleRefreshToken, {
       httpOnly: true,
     });
-    res.redirect('http://localhost:3000/api/v1/auth/google/profile');
+    res.redirect('/auth/google/profile');
   }
 
   @UseGuards(CheckTokenExpiryGuard)
   @Get('google/profile')
+  @ApiOperation({
+    summary: 'Trả về thông tin của Gmail profile sau khi đăng nhập trên Web',
+  })
   async getGoogleProfile(@Req() req) {
     const accessToken = req.cookies['access_token'];
     if (accessToken) {
@@ -83,18 +98,24 @@ export class AuthController {
   }
 
   @Get('google/logout')
+  @ApiOperation({
+    summary: 'Đăng xuất Gmail sau khi đăng nhập trên Web',
+  })
   async logout(@Req() req, @Res() res) {
     const refreshGoogleToken = req.cookies['refresh_token'];
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
     await this.authService.revokeGoogleToken(refreshGoogleToken);
-    res.redirect('http://localhost:3000/api/v1/');
+    res.redirect('/');
   }
   // --- Google end ---
 
   // --- Facebook start ---
-  @ApiBody({ type: SocialLoginRequestDto })
   @Post('facebook')
+  @ApiBody({ type: SocialLoginRequestDto })
+  @ApiOperation({
+    summary: 'Đăng nhập Facebook qua API',
+  })
   async facebookAuth(
     @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
@@ -103,6 +124,9 @@ export class AuthController {
 
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
+  @ApiOperation({
+    summary: 'Đăng nhập qua Facebook dành cho Web',
+  })
   facebookAuthCallback(@Req() req) {
     console.log(req.user);
     return {
@@ -113,8 +137,11 @@ export class AuthController {
   // --- Facebook end ---
 
   // --- Apple start ---
-  @ApiBody({ type: SocialLoginRequestDto })
   @Get('apple')
+  @ApiBody({ type: SocialLoginRequestDto })
+  @ApiOperation({
+    summary: 'Đăng nhập qua Apple qua API',
+  })
   async appleAuth(
     @Body() body: SocialLoginRequestDto,
   ): Promise<LoginResponseDTO | BadRequestException> {
@@ -123,6 +150,9 @@ export class AuthController {
 
   @Get('apple/callback')
   @UseGuards(AppleAuthGuard)
+  @ApiOperation({
+    summary: 'Đăng nhập qua Apple cho Web',
+  })
   appleAuthCallback(@Req() req, @Res() res) {
     return res.redirect('/');
   }

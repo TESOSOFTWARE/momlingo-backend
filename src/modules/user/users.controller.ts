@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -33,9 +34,9 @@ import { User } from './entities/user.entity';
   status: 400,
   description:
     'Lỗi 400 hoặc các lỗi khác sẽ trả về dạng: {\n' +
-    '    "success": false,\n' +
+    '    "message": "User not found",\n' +
     '    "statusCode": 500,\n' +
-    '    "message"": "Internal server error"\n' +
+    '    "error"": "Internal server error"\n' +
     '}',
 })
 @UseGuards(JwtGuard)
@@ -54,13 +55,12 @@ export class UsersController {
     return this.usersService.findOneById(id);
   }
 
-  @Get('profile')
+  @Get(':id/profile')
   @ApiOperation({
-    summary: 'Lấy thông tin cơ bản của của chính mình, có thông tin children',
+    summary: 'Lấy thông full thông tin user và children',
   })
-  async getProfile(@Req() req): Promise<UserWithChildren> {
-    const userId = req.user.id;
-    return this.usersService.findUserWithPartnerAndChildrenById(userId);
+  async getProfile(@Param('id') id: number): Promise<UserWithChildren> {
+    return this.usersService.findUserWithPartnerAndChildrenById(id);
   }
 
   @Get()
@@ -72,30 +72,32 @@ export class UsersController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Cập nhật thông tin user' })
+  @ApiOperation({
+    summary: 'Cập nhật thông tin user. Chỉ truyền avatar khi file != null',
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('avatar', getMulterOptions('user-avatars')))
   @ApiResponse({
     status: 200,
     description:
-      'Trả về mình thông tin user chứ không có children, vì cái này giảm request cho BE và MB tự xử lý được. Thành công xong update thông tin user thôi và copy children từ trước đó!',
+      'Trả về mình thông tin user chứ không có children, vì cái này giảm query cho BE và MB tự xử lý được. ' +
+      'Thành công xong update thông tin user thôi và copy children từ trước đó!. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
   })
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
-  ): Promise<UserWithChildren> {
+  ): Promise<User> {
     const currentUser = await this.usersService.findOneById(id);
 
-    if (
-      currentUser.avatarUrl &&
-      currentUser.avatarUrl.includes(req.headers.host)
-    ) {
-      this.fileUploadsService.deleteFile(currentUser.avatarUrl);
-    }
-
     if (file) {
+      if (
+        currentUser.avatarUrl &&
+        currentUser.avatarUrl.includes(req.headers.host)
+      ) {
+        this.fileUploadsService.deleteFile(currentUser.avatarUrl);
+      }
       updateUserDto.avatarUrl = `${req.headers.host}/${file.path}`;
     }
 
@@ -103,6 +105,18 @@ export class UsersController {
     const updatedUser = { ...currentUser, ...updateUserDto };
 
     await this.usersService.updateUser(id, updatedUser);
-    return this.getProfile(req);
+    return this.getUser(req.user.id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Xoá user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Không trả về response, cứ success là thành công',
+  })
+  async deleteUser(@Param('id') id: number): Promise<void> {
+    return this.usersService.deleteUser(id);
   }
 }
