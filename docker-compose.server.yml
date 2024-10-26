@@ -9,6 +9,7 @@ services:
       - .:/app
     command: npx nodemon src/main.ts
     environment:
+      APP_DOMAIN: ${APP_DOMAIN}
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
