@@ -16,6 +16,7 @@ import { Buffer } from 'buffer/';
 import * as jwt from 'jsonwebtoken';
 import { AppleJwtPayload } from './interfaces/apple.jwt.ayload';
 import { UserWithChildren } from '../user/interfaces/user-with-children.interface';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,11 @@ export class AuthService {
   // --- Email - start ---
   async login(email: string, password: string): Promise<LoginResponseDTO> {
     const userWithChildren = await this.validateUser(email, password);
-    const accessToken = this.generateToken(userWithChildren);
+    const payload = {
+      id: userWithChildren.id,
+      email: userWithChildren.email
+    };
+    const accessToken = this.generateToken(payload);
     return {
       accessToken,
       user: userWithChildren,
@@ -37,12 +42,16 @@ export class AuthService {
   async register(user: RegisterRequestDTO): Promise<LoginResponseDTO> {
     const existingUser = await this.usersService.findOneByEmail(user.email);
     if (existingUser) {
-      throw new BadRequestException('email already exists');
+      throw new BadRequestException('Email đã được đăng ký');
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUserData = { ...user, password: hashedPassword };
     const userWithChildren = await this.usersService.create(newUserData);
-    const accessToken = this.generateToken(await userWithChildren);
+    const payload = {
+      id: userWithChildren.id,
+      email: userWithChildren.email
+    };
+    const accessToken = this.generateToken(payload);
     return {
       accessToken,
       user: userWithChildren,
@@ -77,7 +86,11 @@ export class AuthService {
           role: UserRole.USER,
         });
       }
-      const accessToken = this.generateToken(userWithChildren);
+      const payload = {
+        id: userWithChildren.id,
+        email: userWithChildren.email
+      };
+      const accessToken = this.generateToken(payload);
       return {
         accessToken,
         user: userWithChildren,
@@ -167,7 +180,11 @@ export class AuthService {
         });
       }
 
-      const accessToken = this.generateToken(userWithChildren);
+      const payload = {
+        id: userWithChildren.id,
+        email: userWithChildren.email
+      };
+      const accessToken = this.generateToken(payload);
       return {
         accessToken,
         user: userWithChildren,
@@ -213,7 +230,11 @@ export class AuthService {
       });
     }
 
-    const accessToken = this.generateToken(userWithChildren);
+    const payload = {
+      id: userWithChildren.id,
+      email: userWithChildren.email
+    };
+    const accessToken = this.generateToken(payload);
     return {
       accessToken,
       user: userWithChildren,
@@ -282,12 +303,11 @@ export class AuthService {
     return userWithChildren;
   }
 
-  async validateUserById(id: number): Promise<User | null> {
-    return this.usersService.findOneById(id);
+  async validateUserByEmail(email: string): Promise<User | null> {
+    return this.usersService.findOneByEmail(email);
   }
 
-  private generateToken(userWithChildren: UserWithChildren): string {
-    const payload = { email: userWithChildren.email, id: userWithChildren.id };
+  private generateToken(payload: JwtPayload): string {
     return this.jwtService.sign(payload);
   }
 }

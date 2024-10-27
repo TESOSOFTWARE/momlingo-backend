@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('child-trackers')
+@Entity('child-baby-trackers')
 export class BabyInfo {
   @PrimaryGeneratedColumn()
   id: number;
