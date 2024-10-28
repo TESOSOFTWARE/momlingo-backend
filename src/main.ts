@@ -10,7 +10,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('api/v1');
-  app.useGlobalGuards(new JwtGuard(app.get(Reflector)));
   app.use(cookieParser());
 
   const config = new DocumentBuilder()
