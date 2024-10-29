@@ -46,8 +46,7 @@ export class BabyTrackersController {
 
   @Get(':id')
   @ApiOperation({
-    summary:
-      '',
+    summary: '',
   })
   async getBabyTracker(@Param('id') id: number): Promise<BabyTracker> {
     return this.usersService.findOneById(id);

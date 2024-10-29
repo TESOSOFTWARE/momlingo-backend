@@ -26,5 +26,4 @@ export class MomInfo {
 
   @OneToOne(() => BabyTracker, (babyTracker) => babyTracker.momInfo)
   babyTracker: BabyTracker;
-
 }

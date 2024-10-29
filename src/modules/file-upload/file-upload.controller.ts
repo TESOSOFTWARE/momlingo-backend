@@ -1,7 +1,4 @@
-import {
-  Controller,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';

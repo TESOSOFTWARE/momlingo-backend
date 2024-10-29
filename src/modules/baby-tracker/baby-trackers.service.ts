@@ -25,7 +25,7 @@ export class BabyTrackersService {
 
   findAllWithRelations(): Promise<BabyTracker[]> {
     return this.babyTrackerRepository.find({
-      relations: ['momInfo', 'babyInfo']
+      relations: ['momInfo', 'babyInfo'],
     });
   }
 

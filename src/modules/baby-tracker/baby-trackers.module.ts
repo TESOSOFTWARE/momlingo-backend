@@ -8,7 +8,10 @@ import { MomInfo } from './entities/mom-info.entity';
 import { BabyInfo } from './entities/baby-info.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BabyTracker, MomInfo, BabyInfo]), FileUploadModule],
+  imports: [
+    TypeOrmModule.forFeature([BabyTracker, MomInfo, BabyInfo]),
+    FileUploadModule,
+  ],
   providers: [BabyTrackersService],
   controllers: [BabyTrackersController],
   exports: [TypeOrmModule, BabyTrackersService],

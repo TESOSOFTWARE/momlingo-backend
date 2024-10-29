@@ -30,7 +30,7 @@ export class AuthService {
     const userWithChildren = await this.validateUser(email, password);
     const payload = {
       id: userWithChildren.id,
-      email: userWithChildren.email
+      email: userWithChildren.email,
     };
     const accessToken = this.generateToken(payload);
     return {
@@ -49,7 +49,7 @@ export class AuthService {
     const userWithChildren = await this.usersService.create(newUserData);
     const payload = {
       id: userWithChildren.id,
-      email: userWithChildren.email
+      email: userWithChildren.email,
     };
     const accessToken = this.generateToken(payload);
     return {
@@ -88,7 +88,7 @@ export class AuthService {
       }
       const payload = {
         id: userWithChildren.id,
-        email: userWithChildren.email
+        email: userWithChildren.email,
       };
       const accessToken = this.generateToken(payload);
       return {
@@ -182,7 +182,7 @@ export class AuthService {
 
       const payload = {
         id: userWithChildren.id,
-        email: userWithChildren.email
+        email: userWithChildren.email,
       };
       const accessToken = this.generateToken(payload);
       return {
@@ -232,7 +232,7 @@ export class AuthService {
 
     const payload = {
       id: userWithChildren.id,
-      email: userWithChildren.email
+      email: userWithChildren.email,
     };
     const accessToken = this.generateToken(payload);
     return {

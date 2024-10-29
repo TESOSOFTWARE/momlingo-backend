@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('child-baby-trackers')
 export class BabyInfo {
@@ -16,5 +22,4 @@ export class BabyInfo {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
 }

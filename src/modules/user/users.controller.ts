@@ -56,10 +56,18 @@ export class UsersController {
 
   @Get(':id/profile')
   @ApiOperation({
-    summary: 'Lấy thông full thông tin user và children',
+    summary: 'Lấy thông full thông tin user và children dựa vào user id',
   })
   async getProfile(@Param('id') id: number): Promise<UserWithChildren> {
     return this.usersService.findUserWithPartnerAndChildrenById(id);
+  }
+
+  @Get('/profile/me')
+  @ApiOperation({
+    summary: 'Lấy thông full thông tin user và children dựa vào access token',
+  })
+  async getMyProfile(@Req() req): Promise<UserWithChildren> {
+    return this.usersService.findUserWithPartnerAndChildrenById(req.user.id);
   }
 
   @Get()

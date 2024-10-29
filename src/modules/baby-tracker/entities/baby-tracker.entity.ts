@@ -2,10 +2,10 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToOne, JoinColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { BabyInfo } from './baby-info.entity';
 import { MomInfo } from './mom-info.entity';
