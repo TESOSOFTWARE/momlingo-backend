@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,7 +9,8 @@ import {
   Post,
   Put,
   Req,
-  UploadedFile, UploadedFiles,
+  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -33,21 +35,22 @@ import { BabyTracker } from './entities/baby-tracker.entity';
 import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
 import { diskStorage } from 'multer';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { extname } from "path";
+import { extname } from 'path';
 import * as fs from 'fs-extra';
+import { WeekGuard } from './guards/week.guard';
 
 const babyTrackerMulterOptions: MulterOptions = {
   storage: diskStorage({
     destination: async (req, file, cb) => {
       const week = req.body.week;
-      console.log("week diskStorage", week);
+      console.log('week diskStorage', week);
       const uploadPath = `./uploads/baby-trackers/week-${week}`;
       try {
         await fs.ensureDir(uploadPath);
-        console.log("Thư mục đã được tạo:", uploadPath);
+        console.log('Thư mục đã được tạo:', uploadPath);
         cb(null, uploadPath);
       } catch (error) {
-        console.error("Không thể tạo thư mục:", error);
+        console.error('Không thể tạo thư mục:', error);
         cb(error, null);
       }
     },
@@ -119,14 +122,14 @@ export class BabyTrackersController {
     summary: 'Tạo thông tin 1 tracker cho bầu tuần thứ X',
   })
   @ApiConsumes('multipart/form-data')
-  // @UseInterceptors(FileInterceptor('avatar', getMulterOptions('child-avatars')))
   @ApiResponse({
     status: 200,
     description:
       'Trả về đầy đủ thông tin baby-tracker. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
   })
   @UseInterceptors(
-    FileFieldsInterceptor([
+    FileFieldsInterceptor(
+      [
         { name: 'thumbnail3DMom', maxCount: 1 },
         { name: 'thumbnail3DBaby', maxCount: 1 },
         { name: 'symbolicImageBaby', maxCount: 1 },
@@ -136,30 +139,39 @@ export class BabyTrackersController {
   )
   async create(
     @Body() createBabyTrackerDto: CreateBabyTrackerDto,
-    // @UploadedFile('thumbnail3DMom') thumbnail3DMomFile: Express.Multer.File,
-    // @UploadedFile('thumbnail3DBaby') thumbnail3DBabyFile: Express.Multer.File,
-    // @UploadedFile('symbolicImageBaby') symbolicImageBabyFile: Express.Multer.File,
-    @UploadedFiles() files: {
-      thumbnail3DMom?: Express.Multer.File[],
-      thumbnail3DBaby?: Express.Multer.File[],
-      symbolicImageBaby?: Express.Multer.File[],
-    }
-
+    @UploadedFiles()
+    files: {
+      thumbnail3DMom?: Express.Multer.File[];
+      thumbnail3DBaby?: Express.Multer.File[];
+      symbolicImageBaby?: Express.Multer.File[];
+    },
+    @Req() req,
   ) {
-    console.log("thumbnail3DMom", files.thumbnail3DMom);
-    console.log("thumbnail3DBaby", files.thumbnail3DBaby);
-    console.log("symbolicImageBaby", files.symbolicImageBaby);
     if (files.thumbnail3DMom[0]) {
-      createBabyTrackerDto.thumbnail3DUrlMom = files.thumbnail3DMom[0].filename;
+      createBabyTrackerDto.thumbnail3DUrlMom = `${req.headers.host}/${files.thumbnail3DMom[0].path}`;
     }
     if (files.thumbnail3DBaby[0]) {
-      createBabyTrackerDto.thumbnail3DUrlBaby = files.thumbnail3DBaby[0].filename;
+      createBabyTrackerDto.thumbnail3DUrlBaby = `${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
     }
     if (files.symbolicImageBaby[0]) {
-      createBabyTrackerDto.symbolicImageUrl = files.symbolicImageBaby[0].filename;
+      createBabyTrackerDto.symbolicImageUrl = `${req.headers.host}/${files.symbolicImageBaby[0].path}`;
     }
-
-    console.log("createBabyTrackerDto", createBabyTrackerDto);
+    // TODO, change to WeekGuard later
+    const existingTracker = await this.babyTrackersService.findOneByWeek(
+      createBabyTrackerDto.week,
+    );
+    if (existingTracker) {
+      this.fileUploadsService.deleteFile(
+        createBabyTrackerDto.thumbnail3DUrlMom,
+      );
+      this.fileUploadsService.deleteFile(
+        createBabyTrackerDto.thumbnail3DUrlBaby,
+      );
+      this.fileUploadsService.deleteFile(createBabyTrackerDto.symbolicImageUrl);
+      throw new BadRequestException(
+        `Week ${createBabyTrackerDto.week} already exists.`,
+      );
+    }
     return this.babyTrackersService.create(createBabyTrackerDto);
   }
 

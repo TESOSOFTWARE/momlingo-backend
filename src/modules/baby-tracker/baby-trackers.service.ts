@@ -9,6 +9,7 @@ import { BabyInfo } from './entities/baby-info.entity';
 import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
 import { MomInfoDto } from './dtos/mom-info.dto';
 import { BabyInfoDto } from './dtos/baby-info.dto';
+import { Child } from '../children/entities/child.entity';
 
 @Injectable()
 export class BabyTrackersService {
@@ -42,6 +43,10 @@ export class BabyTrackersService {
     });
   }
 
+  findOneByWeek(week: number): Promise<BabyTracker | null> {
+    return this.babyTrackerRepository.findOneBy({ week });
+  }
+
   /*async create(
     BabyTrackerData: Partial<BabyTracker>,
   ): Promise<BabyTrackerWithChildren> {
@@ -54,7 +59,9 @@ export class BabyTrackersService {
     } as BabyTrackerWithChildren;
   }*/
 
-  async create(createBabyTrackerDto: CreateBabyTrackerDto): Promise<BabyTracker> {
+  async create(
+    createBabyTrackerDto: CreateBabyTrackerDto,
+  ): Promise<BabyTracker> {
     const momInfoDto = new MomInfoDto();
     momInfoDto.week = createBabyTrackerDto.week;
     momInfoDto.thumbnail3DUrl = createBabyTrackerDto.thumbnail3DUrlMom;
@@ -72,7 +79,8 @@ export class BabyTrackersService {
     babyInfoDto.thumbnail3DUrl = createBabyTrackerDto.thumbnail3DUrlBaby;
     babyInfoDto.image3DUrl = createBabyTrackerDto.image3DUrlBaby;
     babyInfoDto.symbolicImageUrl = createBabyTrackerDto.symbolicImageUrl;
-    babyInfoDto.sizeShortDescription = createBabyTrackerDto.sizeShortDescription;
+    babyInfoDto.sizeShortDescription =
+      createBabyTrackerDto.sizeShortDescription;
     babyInfoDto.babyOverallInfo = createBabyTrackerDto.babyOverallInfo;
     babyInfoDto.babySizeInfo = createBabyTrackerDto.babySizeInfo;
     const babyInfo = this.babyInfoRepository.create(babyInfoDto);

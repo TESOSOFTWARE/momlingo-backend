@@ -11,7 +11,10 @@ export class CreateBabyTrackerDto {
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
   week: number;
 
-  @ApiPropertyOptional({ example: '', description: 'Nội dung trọng tâm của tuần đó' })
+  @ApiPropertyOptional({
+    example: '',
+    description: 'Nội dung trọng tâm của tuần đó',
+  })
   @IsString()
   @IsOptional()
   keyTakeaways?: string;
@@ -27,7 +30,8 @@ export class CreateBabyTrackerDto {
   thumbnail3DUrlMom?: string;
 
   @ApiPropertyOptional({
-    example: 'https://human.biodigital.com/widget/?m=client/the_bump_web/mom_week_20.json',
+    example:
+      'https://human.biodigital.com/widget/?m=client/the_bump_web/mom_week_20.json',
     description: 'Link dẫn đến ảnh 3D mở webview',
   })
   @IsString()
@@ -57,7 +61,6 @@ export class CreateBabyTrackerDto {
   @IsString()
   @IsOptional()
   thingsToAvoid?: string;
-
 
   @ApiPropertyOptional({ example: '3000', description: 'Đơn vị sẽ là gam' })
   @IsInt()
@@ -123,7 +126,10 @@ export class CreateBabyTrackerDto {
 }
 
 export class UpdateBabyTrackerDto {
-  @ApiPropertyOptional({ example: '', description: 'Nội dung trọng tâm của tuần đó' })
+  @ApiPropertyOptional({
+    example: '',
+    description: 'Nội dung trọng tâm của tuần đó',
+  })
   @IsString()
   @IsOptional()
   keyTakeaways?: string;
@@ -139,7 +145,8 @@ export class UpdateBabyTrackerDto {
   thumbnail3DUrlMom?: string;
 
   @ApiPropertyOptional({
-    example: 'https://human.biodigital.com/widget/?m=client/the_bump_web/baby_week_20.json',
+    example:
+      'https://human.biodigital.com/widget/?m=client/the_bump_web/baby_week_20.json',
     description: 'Link dẫn đến ảnh 3D mở webview',
   })
   @IsString()
@@ -169,7 +176,6 @@ export class UpdateBabyTrackerDto {
   @IsString()
   @IsOptional()
   thingsToAvoid?: string;
-
 
   @ApiPropertyOptional({ example: '3000', description: 'Đơn vị sẽ là gam' })
   @IsInt()

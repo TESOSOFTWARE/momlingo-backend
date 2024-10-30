@@ -20,7 +20,8 @@ export class MomInfoDto {
   thumbnail3DUrl?: string;
 
   @ApiPropertyOptional({
-    example: 'https://human.biodigital.com/widget/?m=client/the_bump_web/baby_week_20.json',
+    example:
+      'https://human.biodigital.com/widget/?m=client/the_bump_web/baby_week_20.json',
     description: 'Link dẫn đến ảnh 3D mở webview',
   })
   @IsString()

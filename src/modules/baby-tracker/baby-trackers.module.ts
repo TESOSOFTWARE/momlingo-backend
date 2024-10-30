@@ -6,13 +6,14 @@ import { FileUploadModule } from '../file-upload/file-upload.module';
 import { BabyTracker } from './entities/baby-tracker.entity';
 import { MomInfo } from './entities/mom-info.entity';
 import { BabyInfo } from './entities/baby-info.entity';
+import { WeekGuard } from './guards/week.guard';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BabyTracker, MomInfo, BabyInfo]),
     FileUploadModule,
   ],
-  providers: [BabyTrackersService],
+  providers: [WeekGuard, BabyTrackersService],
   controllers: [BabyTrackersController],
   exports: [TypeOrmModule, BabyTrackersService],
 })
