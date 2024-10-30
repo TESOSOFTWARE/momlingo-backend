@@ -262,6 +262,18 @@ export class BabyTrackersController {
     );
   }
 
+  @Delete(':week')
+  @ApiOperation({
+    summary: 'Xoá Baby Tracker',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Không trả về response, cứ success là thành công',
+  })
+  async deleteChild(@Param('week') week: number, @Req() req): Promise<void> {
+    await this.babyTrackersService.delete(week);
+  }
+
   /*@Put(':id')
   @ApiOperation({
     summary: 'Cập nhật thông tin child. Chỉ truyền avatar khi file != null',

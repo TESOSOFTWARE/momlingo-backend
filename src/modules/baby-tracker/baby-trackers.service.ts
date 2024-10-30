@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { BabyTracker } from './entities/baby-tracker.entity';
 import { MomInfo } from './entities/mom-info.entity';
@@ -145,62 +145,33 @@ export class BabyTrackersService {
     return this.babyTrackerRepository.save(existingTracker);
   }
 
-  /*async updateBabyTracker(
-    id: number,
-    updateBabyTrackerDto: UpdateBabyTrackerDto,
-  ): Promise<BabyTracker> {
-    await this.babyTrackerRepository.update(id, updateBabyTrackerDto);
-    return this.babyTrackerRepository.findOneBy({ id });
-  }
+  async delete(week: number): Promise<void> {
+    await this.babyTrackerRepository.manager.transaction(
+      async (entityManager: EntityManager) => {
+        const babyTracker = await this.findOneByWeekWithRelations(week);
+        if (!babyTracker) {
+          throw new NotFoundException(
+            `BabyTracker with week ${week} not found`,
+          );
+        }
 
-  async findBabyTrackerWithPartnerAndChildrenById(
-    id: number,
-  ): Promise<BabyTrackerWithChildren> {
-    const BabyTracker = await this.babyTrackerRepository.findOne({
-      where: { id },
-      relations: ['partner', 'childrenAsMother', 'childrenAsFather'],
-    });
-    if (!BabyTracker) {
-      throw new Error('BabyTracker not found');
-    }
-    const children =
-      BabyTracker.gender === Gender.FEMALE
-        ? BabyTracker.childrenAsMother
-        : BabyTracker.childrenAsFather;
-    return {
-      ...BabyTracker,
-      children,
-    } as BabyTrackerWithChildren;
-  }
+        await entityManager.delete(BabyTracker, babyTracker.id);
 
-  async findBabyTrackerWithPartnerAndChildrenByEmail(
-    email: string,
-  ): Promise<BabyTrackerWithChildren> {
-    const BabyTracker = await this.babyTrackerRepository.findOne({
-      where: { email },
-      relations: ['partner', 'childrenAsMother', 'childrenAsFather'],
-    });
-    if (!BabyTracker) {
-      throw new Error('BabyTracker not found');
-    }
-    const children =
-      BabyTracker.gender === Gender.FEMALE
-        ? BabyTracker.childrenAsMother
-        : BabyTracker.childrenAsFather;
-    return {
-      ...BabyTracker,
-      children,
-    } as BabyTrackerWithChildren;
-  }
+        if (babyTracker.momInfo) {
+          await entityManager.delete(MomInfo, babyTracker.momInfo.id);
+          this.fileUploadService.deleteFile(babyTracker.momInfo.thumbnail3DUrl);
+        }
 
-  async deleteBabyTracker(id: number): Promise<void> {
-    const BabyTracker = await this.babyTrackerRepository.findOneBy({ id });
-    if (!BabyTracker) {
-      throw new UnauthorizedException('BabyTracker not found');
-    }
-    if (BabyTracker.avatarUrl) {
-      this.fileUploadService.deleteFile(BabyTracker.avatarUrl);
-    }
-    await this.babyTrackerRepository.remove(BabyTracker);
-  }*/
+        if (babyTracker.babyInfo) {
+          await entityManager.delete(BabyInfo, babyTracker.babyInfo.id);
+          this.fileUploadService.deleteFile(
+            babyTracker.babyInfo.thumbnail3DUrl,
+          );
+          this.fileUploadService.deleteFile(
+            babyTracker.babyInfo.symbolicImageUrl,
+          );
+        }
+      },
+    );
+  }
 }
