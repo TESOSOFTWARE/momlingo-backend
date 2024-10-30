@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -32,7 +33,10 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { BabyTracker } from './entities/baby-tracker.entity';
-import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
+import {
+  CreateBabyTrackerDto,
+  UpdateBabyTrackerDto,
+} from './dtos/baby-tracker.dto';
 import { diskStorage } from 'multer';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { extname } from 'path';
@@ -173,6 +177,89 @@ export class BabyTrackersController {
       );
     }
     return this.babyTrackersService.create(createBabyTrackerDto);
+  }
+
+  @Put('/update')
+  @ApiBody({ type: UpdateBabyTrackerDto })
+  @ApiOperation({
+    summary: 'Sửa thông tin 1 tracker cho bầu tuần thứ X',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description:
+      'Trả về đầy đủ thông tin baby-tracker. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
+  })
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'thumbnail3DMom', maxCount: 1 },
+        { name: 'thumbnail3DBaby', maxCount: 1 },
+        { name: 'symbolicImageBaby', maxCount: 1 },
+      ],
+      babyTrackerMulterOptions,
+    ),
+  )
+  async update(
+    @Body() updateBabyTrackerDto: UpdateBabyTrackerDto,
+    @UploadedFiles()
+    files: {
+      thumbnail3DMom?: Express.Multer.File[];
+      thumbnail3DBaby?: Express.Multer.File[];
+      symbolicImageBaby?: Express.Multer.File[];
+    },
+    @Req() req,
+  ) {
+    console.log('update', updateBabyTrackerDto);
+    // TODO, change to WeekGuard later
+    const existingTracker =
+      await this.babyTrackersService.findOneByWeekWithRelations(
+        updateBabyTrackerDto.week,
+      );
+
+    console.log('existingTracker', existingTracker);
+
+    if (files.thumbnail3DMom[0]) {
+      updateBabyTrackerDto.thumbnail3DUrlMom = `${req.headers.host}/${files.thumbnail3DMom[0].path}`;
+      if (existingTracker) {
+        this.fileUploadsService.deleteFile(
+          existingTracker.momInfo.thumbnail3DUrl,
+        );
+      }
+    }
+    if (files.thumbnail3DBaby[0]) {
+      updateBabyTrackerDto.thumbnail3DUrlBaby = `${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
+      if (existingTracker) {
+        this.fileUploadsService.deleteFile(
+          existingTracker.babyInfo.thumbnail3DUrl,
+        );
+      }
+    }
+    if (files.symbolicImageBaby[0]) {
+      updateBabyTrackerDto.symbolicImageUrl = `${req.headers.host}/${files.symbolicImageBaby[0].path}`;
+      if (existingTracker) {
+        this.fileUploadsService.deleteFile(
+          existingTracker.babyInfo.symbolicImageUrl,
+        );
+      }
+    }
+
+    if (!existingTracker) {
+      this.fileUploadsService.deleteFile(
+        updateBabyTrackerDto.thumbnail3DUrlMom,
+      );
+      this.fileUploadsService.deleteFile(
+        updateBabyTrackerDto.thumbnail3DUrlBaby,
+      );
+      this.fileUploadsService.deleteFile(updateBabyTrackerDto.symbolicImageUrl);
+      throw new NotFoundException(
+        `BabyTracker of week ${updateBabyTrackerDto.week} not found`,
+      );
+    }
+    return this.babyTrackersService.update(
+      existingTracker,
+      updateBabyTrackerDto,
+    );
   }
 
   /*@Put(':id')

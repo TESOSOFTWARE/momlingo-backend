@@ -1,15 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Gender } from '../../enums/gender.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { BabyTracker } from './entities/baby-tracker.entity';
 import { MomInfo } from './entities/mom-info.entity';
 import { BabyInfo } from './entities/baby-info.entity';
-import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
+import {
+  CreateBabyTrackerDto,
+  UpdateBabyTrackerDto,
+} from './dtos/baby-tracker.dto';
 import { MomInfoDto } from './dtos/mom-info.dto';
 import { BabyInfoDto } from './dtos/baby-info.dto';
-import { Child } from '../children/entities/child.entity';
 
 @Injectable()
 export class BabyTrackersService {
@@ -47,18 +48,6 @@ export class BabyTrackersService {
     return this.babyTrackerRepository.findOneBy({ week });
   }
 
-  /*async create(
-    BabyTrackerData: Partial<BabyTracker>,
-  ): Promise<BabyTrackerWithChildren> {
-    const BabyTracker = this.babyTrackerRepository.create(BabyTrackerData);
-    await this.babyTrackerRepository.save(BabyTracker);
-    return {
-      ...BabyTracker,
-      partner: null,
-      children: [],
-    } as BabyTrackerWithChildren;
-  }*/
-
   async create(
     createBabyTrackerDto: CreateBabyTrackerDto,
   ): Promise<BabyTracker> {
@@ -75,7 +64,7 @@ export class BabyTrackersService {
     const babyInfoDto = new BabyInfoDto();
     babyInfoDto.week = createBabyTrackerDto.week;
     babyInfoDto.weight = createBabyTrackerDto.weight;
-    babyInfoDto.high = createBabyTrackerDto.week;
+    babyInfoDto.high = createBabyTrackerDto.high;
     babyInfoDto.thumbnail3DUrl = createBabyTrackerDto.thumbnail3DUrlBaby;
     babyInfoDto.image3DUrl = createBabyTrackerDto.image3DUrlBaby;
     babyInfoDto.symbolicImageUrl = createBabyTrackerDto.symbolicImageUrl;
@@ -95,6 +84,65 @@ export class BabyTrackersService {
     const babyTracker = this.babyTrackerRepository.create(babyTrackerDto);
 
     return this.babyTrackerRepository.save(babyTracker);
+  }
+
+  async update(
+    existingTracker: BabyTracker,
+    updateBabyTrackerDto: UpdateBabyTrackerDto,
+  ): Promise<BabyTracker> {
+    const momInfoDto = existingTracker.momInfo;
+    if (updateBabyTrackerDto.thumbnail3DUrlMom) {
+      momInfoDto.thumbnail3DUrl = updateBabyTrackerDto.thumbnail3DUrlMom;
+    }
+    if (updateBabyTrackerDto.image3DUrlMom) {
+      momInfoDto.image3DUrl = updateBabyTrackerDto.image3DUrlMom;
+    }
+    if (updateBabyTrackerDto.symptoms) {
+      momInfoDto.symptoms = updateBabyTrackerDto.symptoms;
+    }
+    if (updateBabyTrackerDto.thingsTodo) {
+      momInfoDto.thingsTodo = updateBabyTrackerDto.thingsTodo;
+    }
+    if (updateBabyTrackerDto.thingsToAvoid) {
+      momInfoDto.thingsToAvoid = updateBabyTrackerDto.thingsToAvoid;
+    }
+    const savedMomInfo = await this.momInfoRepository.save(momInfoDto);
+
+    const babyInfoDto = existingTracker.babyInfo;
+    if (updateBabyTrackerDto.weight) {
+      babyInfoDto.weight = updateBabyTrackerDto.weight;
+    }
+    if (updateBabyTrackerDto.high) {
+      babyInfoDto.high = updateBabyTrackerDto.high;
+    }
+    if (updateBabyTrackerDto.thumbnail3DUrlBaby) {
+      babyInfoDto.thumbnail3DUrl = updateBabyTrackerDto.thumbnail3DUrlBaby;
+    }
+    if (updateBabyTrackerDto.image3DUrlBaby) {
+      babyInfoDto.image3DUrl = updateBabyTrackerDto.image3DUrlBaby;
+    }
+    if (updateBabyTrackerDto.symbolicImageUrl) {
+      babyInfoDto.symbolicImageUrl = updateBabyTrackerDto.symbolicImageUrl;
+    }
+    if (updateBabyTrackerDto.sizeShortDescription) {
+      babyInfoDto.sizeShortDescription =
+        updateBabyTrackerDto.sizeShortDescription;
+    }
+    if (updateBabyTrackerDto.babyOverallInfo) {
+      babyInfoDto.babyOverallInfo = updateBabyTrackerDto.babyOverallInfo;
+    }
+    if (updateBabyTrackerDto.babySizeInfo) {
+      babyInfoDto.babySizeInfo = updateBabyTrackerDto.babySizeInfo;
+    }
+    const savedBabyInfo = await this.babyInfoRepository.save(babyInfoDto);
+
+    if (updateBabyTrackerDto.keyTakeaways) {
+      existingTracker.keyTakeaways = updateBabyTrackerDto.keyTakeaways;
+    }
+    existingTracker.momInfo = savedMomInfo;
+    existingTracker.babyInfo = savedBabyInfo;
+
+    return this.babyTrackerRepository.save(existingTracker);
   }
 
   /*async updateBabyTracker(
