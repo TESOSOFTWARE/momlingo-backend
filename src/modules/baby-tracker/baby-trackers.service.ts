@@ -6,6 +6,9 @@ import { FileUploadService } from '../file-upload/file-upload.service';
 import { BabyTracker } from './entities/baby-tracker.entity';
 import { MomInfo } from './entities/mom-info.entity';
 import { BabyInfo } from './entities/baby-info.entity';
+import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
+import { MomInfoDto } from './dtos/mom-info.dto';
+import { BabyInfoDto } from './dtos/baby-info.dto';
 
 @Injectable()
 export class BabyTrackersService {
@@ -19,36 +22,29 @@ export class BabyTrackersService {
     private fileUploadService: FileUploadService,
   ) {}
 
-  findAll(): Promise<BabyTracker[]> {
-    return this.babyTrackerRepository.find();
-  }
-
   findAllWithRelations(): Promise<BabyTracker[]> {
     return this.babyTrackerRepository.find({
       relations: ['momInfo', 'babyInfo'],
     });
   }
 
-  findOneById(id: number): Promise<BabyTracker | null> {
-    return this.babyTrackerRepository.findOneBy({ id });
-  }
-
-  /*findOneByIdWithRelations(id: number): Promise<BabyTracker | null> {
-    return await this.babyTrackerRepository.findOne({
+  findOneByIdWithRelations(id: number): Promise<BabyTracker | null> {
+    return this.babyTrackerRepository.findOne({
       where: { id },
-      relations: ['momInfo', 'babyInfo'], // Tải các quan hệ
+      relations: ['momInfo', 'babyInfo'],
     });
   }
 
-  findOneByWeek(week: number): Promise<BabyTracker | null> {
-    return this.babyTrackerRepository.findOneBy({ week });
-  }
-
   findOneByWeekWithRelations(week: number): Promise<BabyTracker | null> {
-    return this.babyTrackerRepository.findOneBy({ week });
+    return this.babyTrackerRepository.findOne({
+      where: { week },
+      relations: ['momInfo', 'babyInfo'],
+    });
   }
 
-  async create(BabyTrackerData: Partial<BabyTracker>): Promise<BabyTrackerWithChildren> {
+  /*async create(
+    BabyTrackerData: Partial<BabyTracker>,
+  ): Promise<BabyTrackerWithChildren> {
     const BabyTracker = this.babyTrackerRepository.create(BabyTrackerData);
     await this.babyTrackerRepository.save(BabyTracker);
     return {
@@ -56,9 +52,47 @@ export class BabyTrackersService {
       partner: null,
       children: [],
     } as BabyTrackerWithChildren;
+  }*/
+
+  async create(createBabyTrackerDto: CreateBabyTrackerDto): Promise<BabyTracker> {
+    const momInfoDto = new MomInfoDto();
+    momInfoDto.week = createBabyTrackerDto.week;
+    momInfoDto.thumbnail3DUrl = createBabyTrackerDto.thumbnail3DUrlMom;
+    momInfoDto.image3DUrl = createBabyTrackerDto.image3DUrlMom;
+    momInfoDto.symptoms = createBabyTrackerDto.symptoms;
+    momInfoDto.thingsTodo = createBabyTrackerDto.thingsTodo;
+    momInfoDto.thingsToAvoid = createBabyTrackerDto.thingsToAvoid;
+    const momInfo = this.momInfoRepository.create(momInfoDto);
+    const savedMomInfo = await this.momInfoRepository.save(momInfo);
+
+    const babyInfoDto = new BabyInfoDto();
+    babyInfoDto.week = createBabyTrackerDto.week;
+    babyInfoDto.weight = createBabyTrackerDto.weight;
+    babyInfoDto.high = createBabyTrackerDto.week;
+    babyInfoDto.thumbnail3DUrl = createBabyTrackerDto.thumbnail3DUrlBaby;
+    babyInfoDto.image3DUrl = createBabyTrackerDto.image3DUrlBaby;
+    babyInfoDto.symbolicImageUrl = createBabyTrackerDto.symbolicImageUrl;
+    babyInfoDto.sizeShortDescription = createBabyTrackerDto.sizeShortDescription;
+    babyInfoDto.babyOverallInfo = createBabyTrackerDto.babyOverallInfo;
+    babyInfoDto.babySizeInfo = createBabyTrackerDto.babySizeInfo;
+    const babyInfo = this.babyInfoRepository.create(babyInfoDto);
+    const savedBabyInfo = await this.babyInfoRepository.save(babyInfo);
+
+    const babyTrackerDto = {
+      week: createBabyTrackerDto.week,
+      keyTakeaways: createBabyTrackerDto.keyTakeaways,
+      momInfo: savedMomInfo,
+      babyInfo: savedBabyInfo,
+    };
+    const babyTracker = this.babyTrackerRepository.create(babyTrackerDto);
+
+    return this.babyTrackerRepository.save(babyTracker);
   }
 
-  async updateBabyTracker(id: number, updateBabyTrackerDto: UpdateBabyTrackerDto): Promise<BabyTracker> {
+  /*async updateBabyTracker(
+    id: number,
+    updateBabyTrackerDto: UpdateBabyTrackerDto,
+  ): Promise<BabyTracker> {
     await this.babyTrackerRepository.update(id, updateBabyTrackerDto);
     return this.babyTrackerRepository.findOneBy({ id });
   }

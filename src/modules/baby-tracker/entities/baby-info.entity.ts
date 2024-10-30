@@ -13,10 +13,10 @@ export class BabyInfo {
   weight: number;
 
   @Column('double')
-  height: number;
+  high: number;
 
   @Column({ nullable: true })
-  thumbnail3D: string;
+  thumbnail3DUrl: string;
 
   @Column({ nullable: true })
   image3DUrl: string;

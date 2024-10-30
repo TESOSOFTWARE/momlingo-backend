@@ -147,21 +147,4 @@ export class ChildrenController {
     }
     return this.childrenService.deleteChild(id, userId);
   }
-
-  /*@ApiBody({ type: UpdateChildDto })
-  @Patch(':id')
-  async updateChild(
-    @Param('id') id: number,
-    @Body() updateChildDto: UpdateChildDto,
-    @Req() req,
-  ): Promise<Child> {
-    const userId = req.user.id;
-    return this.childrenService.updateChild(id, updateChildDto, userId);
-  }
-
-  @Delete(':id')
-  async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
-    const userId = req.user.id;
-    return this.childrenService.deleteChild(id, userId);
-  }*/
 }

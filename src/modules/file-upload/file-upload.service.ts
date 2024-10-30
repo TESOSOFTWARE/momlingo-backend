@@ -23,8 +23,8 @@ export function getMulterOptions(folderName: string): MulterOptions {
     storage: diskStorage({
       destination: `./uploads/${folderName}`,
       filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + extname(file.originalname));
+        const fileName = `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+        cb(null, fileName);
       },
     }),
     limits: {

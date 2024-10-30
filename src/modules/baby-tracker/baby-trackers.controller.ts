@@ -5,26 +5,67 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Put,
   Req,
-  UploadedFile,
+  UploadedFile, UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { BabyTrackersService } from './baby-trackers.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import {
   FileUploadService,
   getMulterOptions,
 } from '../file-upload/file-upload.service';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
 import { BabyTracker } from './entities/baby-tracker.entity';
+import { CreateBabyTrackerDto } from './dtos/baby-tracker.dto';
+import { diskStorage } from 'multer';
+import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { extname } from "path";
+import * as fs from 'fs-extra';
+
+const babyTrackerMulterOptions: MulterOptions = {
+  storage: diskStorage({
+    destination: async (req, file, cb) => {
+      const week = req.body.week;
+      console.log("week diskStorage", week);
+      const uploadPath = `./uploads/baby-trackers/week-${week}`;
+      try {
+        await fs.ensureDir(uploadPath);
+        console.log("Thư mục đã được tạo:", uploadPath);
+        cb(null, uploadPath);
+      } catch (error) {
+        console.error("Không thể tạo thư mục:", error);
+        cb(error, null);
+      }
+    },
+    filename: (req, file, cb) => {
+      const fileName = `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+      cb(null, fileName);
+    },
+  }),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  },
+};
 
 @Controller('baby-trackers')
 @ApiBearerAuth()
@@ -40,73 +81,135 @@ import { BabyTracker } from './entities/baby-tracker.entity';
 @UseGuards(JwtGuard)
 export class BabyTrackersController {
   constructor(
-    private readonly usersService: BabyTrackersService,
+    private readonly babyTrackersService: BabyTrackersService,
     private readonly fileUploadsService: FileUploadService,
   ) {}
 
-  @Get(':id')
+  @Get()
   @ApiOperation({
-    summary: '',
+    summary: 'Lấy tất cả danh sách baby-tracker',
   })
-  async getBabyTracker(@Param('id') id: number): Promise<BabyTracker> {
-    return this.usersService.findOneById(id);
+  async getAllBabyTrackersWithRelations(): Promise<BabyTracker[]> {
+    return this.babyTrackersService.findAllWithRelations();
   }
 
-  /*
-    @Get()
-    @ApiOperation({
-      summary: 'Lấy tất cả danh sách baby-tracker',
-    })
-    async getAllBabyTrackers(): Promise<User[]> {
-      return this.usersService.findAll();
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Lấy baby tracker theo record id',
+  })
+  async getBabyTrackerByIdWithRelations(
+    @Param('id') id: number,
+  ): Promise<BabyTracker> {
+    return await this.babyTrackersService.findOneByIdWithRelations(id);
+  }
+
+  @Get(':week')
+  @ApiOperation({
+    summary: 'Lấy baby tracker theo week',
+  })
+  async getBabyTrackerByWeekWithRelations(
+    @Param('week') week: number,
+  ): Promise<BabyTracker> {
+    return await this.babyTrackersService.findOneByWeekWithRelations(week);
+  }
+
+  @Post('/create')
+  @ApiBody({ type: CreateBabyTrackerDto })
+  @ApiOperation({
+    summary: 'Tạo thông tin 1 tracker cho bầu tuần thứ X',
+  })
+  @ApiConsumes('multipart/form-data')
+  // @UseInterceptors(FileInterceptor('avatar', getMulterOptions('child-avatars')))
+  @ApiResponse({
+    status: 200,
+    description:
+      'Trả về đầy đủ thông tin baby-tracker. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
+  })
+  @UseInterceptors(
+    FileFieldsInterceptor([
+        { name: 'thumbnail3DMom', maxCount: 1 },
+        { name: 'thumbnail3DBaby', maxCount: 1 },
+        { name: 'symbolicImageBaby', maxCount: 1 },
+      ],
+      babyTrackerMulterOptions,
+    ),
+  )
+  async create(
+    @Body() createBabyTrackerDto: CreateBabyTrackerDto,
+    // @UploadedFile('thumbnail3DMom') thumbnail3DMomFile: Express.Multer.File,
+    // @UploadedFile('thumbnail3DBaby') thumbnail3DBabyFile: Express.Multer.File,
+    // @UploadedFile('symbolicImageBaby') symbolicImageBabyFile: Express.Multer.File,
+    @UploadedFiles() files: {
+      thumbnail3DMom?: Express.Multer.File[],
+      thumbnail3DBaby?: Express.Multer.File[],
+      symbolicImageBaby?: Express.Multer.File[],
     }
 
-    @Put(':id')
-    @ApiOperation({
-      summary: 'Cập nhật thông tin user. Chỉ truyền avatar khi file != null',
-    })
-    @ApiConsumes('multipart/form-data')
-    @UseInterceptors(FileInterceptor('avatar', getMulterOptions('user-avatars')))
-    @ApiResponse({
-      status: 200,
-      description:
-        'Trả về mình thông tin user chứ không có children, vì cái này giảm query cho BE và MB tự xử lý được. ' +
-        'Thành công xong update thông tin user thôi và copy children từ trước đó!. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
-    })
-    async updateBabyTracker(
-      @Param('id') id: number,
-      @Body() updateUserDto: UpdateUserDto,
-      @UploadedFile() file: Express.Multer.File,
-      @Req() req: any,
-    ): Promise<User> {
-      const currentUser = await this.usersService.findOneById(id);
+  ) {
+    console.log("thumbnail3DMom", files.thumbnail3DMom);
+    console.log("thumbnail3DBaby", files.thumbnail3DBaby);
+    console.log("symbolicImageBaby", files.symbolicImageBaby);
+    if (files.thumbnail3DMom[0]) {
+      createBabyTrackerDto.thumbnail3DUrlMom = files.thumbnail3DMom[0].filename;
+    }
+    if (files.thumbnail3DBaby[0]) {
+      createBabyTrackerDto.thumbnail3DUrlBaby = files.thumbnail3DBaby[0].filename;
+    }
+    if (files.symbolicImageBaby[0]) {
+      createBabyTrackerDto.symbolicImageUrl = files.symbolicImageBaby[0].filename;
+    }
 
-      if (file) {
-        if (
-          currentUser.avatarUrl &&
-          currentUser.avatarUrl.includes(req.headers.host)
-        ) {
-          this.fileUploadsService.deleteFile(currentUser.avatarUrl);
-        }
-        updateUserDto.avatarUrl = `${req.headers.host}/${file.path}`;
+    console.log("createBabyTrackerDto", createBabyTrackerDto);
+    return this.babyTrackersService.create(createBabyTrackerDto);
+  }
+
+  /*@Put(':id')
+  @ApiOperation({
+    summary: 'Cập nhật thông tin child. Chỉ truyền avatar khi file != null',
+  })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar', getMulterOptions('child-avatars')))
+  @ApiResponse({
+    status: 200,
+    description:
+      'Trả về mình thông tin child chứ không có thông tin mother, father. Ảnh <= 5Mb và chỉ hỗ hỗ trợ png, jpg, jpeg',
+  })
+  async updateChild(
+    @Param('id') id: number,
+    @Body() updateChildDto: UpdateChildDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ): Promise<Child> {
+    const currentChild = await this.babyTrackersService.findOneById(id);
+
+    if (file) {
+      if (currentChild.avatarUrl) {
+        this.fileUploadsService.deleteFile(currentChild.avatarUrl);
       }
-
-      // Chỉ cập nhật những trường có giá trị trong updateUserDto
-      const updatedUser = { ...currentUser, ...updateUserDto };
-
-      await this.usersService.updateUser(id, updatedUser);
-      return this.getUser(req.user.id);
+      updateChildDto.avatarUrl = `${req.headers.host}/${file.path}`;
     }
 
-    @Delete(':id')
-    @ApiOperation({
-      summary: 'Xoá user',
-    })
-    @ApiResponse({
-      status: 200,
-      description: 'Không trả về response, cứ success là thành công',
-    })
-    async deleteBabyTracker(@Param('id') id: number): Promise<void> {
-      return this.usersService.deleteUser(id);
-    }*/
+    // Chỉ cập nhật những trường có giá trị trong updateChildDto
+    const updatedChild = { ...currentChild, ...updateChildDto };
+
+    const userId = req.user.id;
+    return this.babyTrackersService.updateChild(id, updatedChild, userId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Xoá con',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Không trả về response, cứ success là thành công',
+  })
+  async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
+    const userId = req.user.id;
+    const currentChild = await this.babyTrackersService.findOneById(id);
+    if (currentChild.avatarUrl) {
+      this.fileUploadsService.deleteFile(currentChild.avatarUrl);
+    }
+    return this.babyTrackersService.deleteChild(id, userId);
+  }*/
 }
