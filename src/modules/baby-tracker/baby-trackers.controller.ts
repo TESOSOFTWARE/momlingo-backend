@@ -31,6 +31,7 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { BabyTracker } from './entities/baby-tracker.entity';
 import {
@@ -74,6 +75,7 @@ const babyTrackerMulterOptions: MulterOptions = {
   },
 };
 
+@ApiTags('Baby Trackers')
 @Controller('baby-trackers')
 @ApiBearerAuth()
 @ApiResponse({
@@ -92,35 +94,7 @@ export class BabyTrackersController {
     private readonly fileUploadsService: FileUploadService,
   ) {}
 
-  @Get()
-  @ApiOperation({
-    summary: 'Lấy tất cả danh sách baby-tracker',
-  })
-  async getAllBabyTrackersWithRelations(): Promise<BabyTracker[]> {
-    return this.babyTrackersService.findAllWithRelations();
-  }
-
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Lấy baby tracker theo record id',
-  })
-  async getBabyTrackerByIdWithRelations(
-    @Param('id') id: number,
-  ): Promise<BabyTracker> {
-    return await this.babyTrackersService.findOneByIdWithRelations(id);
-  }
-
-  @Get(':week')
-  @ApiOperation({
-    summary: 'Lấy baby tracker theo week',
-  })
-  async getBabyTrackerByWeekWithRelations(
-    @Param('week') week: number,
-  ): Promise<BabyTracker> {
-    return await this.babyTrackersService.findOneByWeekWithRelations(week);
-  }
-
-  @Post('/create')
+  @Post()
   @ApiBody({ type: CreateBabyTrackerDto })
   @ApiOperation({
     summary: 'Tạo thông tin 1 tracker cho bầu tuần thứ X',
@@ -179,7 +153,25 @@ export class BabyTrackersController {
     return this.babyTrackersService.create(createBabyTrackerDto);
   }
 
-  @Put('/update')
+  @Get()
+  @ApiOperation({
+    summary: 'Lấy tất cả danh sách baby-tracker',
+  })
+  async getAllBabyTrackersWithRelations(): Promise<BabyTracker[]> {
+    return this.babyTrackersService.findAllWithRelations();
+  }
+
+  @Get('week/:week')
+  @ApiOperation({
+    summary: 'Lấy baby tracker theo week',
+  })
+  async getBabyTrackerByWeekWithRelations(
+    @Param('week') week: number,
+  ): Promise<BabyTracker> {
+    return await this.babyTrackersService.findOneByWeekWithRelations(week);
+  }
+
+  @Put()
   @ApiBody({ type: UpdateBabyTrackerDto })
   @ApiOperation({
     summary: 'Sửa thông tin 1 tracker cho bầu tuần thứ X',
@@ -262,7 +254,7 @@ export class BabyTrackersController {
     );
   }
 
-  @Delete(':week')
+  @Delete('week/:week')
   @ApiOperation({
     summary: 'Xoá Baby Tracker',
   })

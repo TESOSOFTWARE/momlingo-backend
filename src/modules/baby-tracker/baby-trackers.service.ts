@@ -37,11 +37,15 @@ export class BabyTrackersService {
     });
   }
 
-  findOneByWeekWithRelations(week: number): Promise<BabyTracker | null> {
-    return this.babyTrackerRepository.findOne({
+  async findOneByWeekWithRelations(week: number): Promise<BabyTracker | null> {
+    const babyTracker = await this.babyTrackerRepository.findOne({
       where: { week },
       relations: ['momInfo', 'babyInfo'],
     });
+    if (!babyTracker) {
+      throw new NotFoundException(`BabyTracker with week ${week} not found`);
+    }
+    return babyTracker;
   }
 
   findOneByWeek(week: number): Promise<BabyTracker | null> {

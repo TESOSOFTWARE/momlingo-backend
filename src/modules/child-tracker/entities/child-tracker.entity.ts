@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('child-baby-trackers')
-export class BabyInfo {
+@Entity('child-trackers')
+export class ChildTracker {
   @PrimaryGeneratedColumn()
   id: number;
 

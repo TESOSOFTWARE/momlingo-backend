@@ -24,9 +24,11 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 
+@ApiTags('Users')
 @Controller('users')
 @ApiBearerAuth()
 @ApiResponse({

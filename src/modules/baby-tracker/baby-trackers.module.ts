@@ -15,6 +15,6 @@ import { WeekGuard } from './guards/week.guard';
   ],
   providers: [WeekGuard, BabyTrackersService],
   controllers: [BabyTrackersController],
-  exports: [TypeOrmModule, BabyTrackersService],
+  exports: [BabyTrackersService],
 })
 export class BabyTrackersModule {}

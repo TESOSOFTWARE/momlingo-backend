@@ -13,6 +13,7 @@ import { ChildrenModule } from './modules/children/children.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { AllExceptionFilter } from './common/filters/all-exception.filter';
 import { BabyTrackersModule } from './modules/baby-tracker/baby-trackers.module';
+import { ChildTrackersModule } from './modules/child-tracker/child-trackers.module';
 dotenv.config();
 
 @Module({
@@ -26,11 +27,12 @@ dotenv.config();
         return await new DataSource(options).initialize();
       },
     }),
+    AuthModule,
     UsersModule,
     ChildrenModule,
-    AuthModule,
-    FileUploadModule,
     BabyTrackersModule,
+    ChildTrackersModule,
+    FileUploadModule,
   ],
   controllers: [],
   providers: [

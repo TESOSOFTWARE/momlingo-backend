@@ -22,6 +22,7 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { UpdateChildDto } from './dtos/update-child.dto';
 import {
@@ -31,6 +32,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from '../user/users.service';
 
+@ApiTags('Children')
 @Controller('children')
 @ApiBearerAuth()
 @ApiResponse({
@@ -49,30 +51,6 @@ export class ChildrenController {
     private readonly usersService: UsersService,
     private readonly fileUploadsService: FileUploadService,
   ) {}
-
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Lấy thông tin cơ bản của 1 children qua id',
-  })
-  async getChild(@Param('id') id: number): Promise<Child> {
-    return this.childrenService.findOneById(id);
-  }
-
-  @Get()
-  @ApiOperation({
-    summary: 'Lấy danh sách tất cả children trong database',
-  })
-  async getAllChildren() {
-    return this.childrenService.findAll();
-  }
-
-  @Get(':userId')
-  @ApiOperation({
-    summary: 'Lấy danh sách tất cả children theo user id',
-  })
-  async getAllChildrenByUserId(@Param('userId') userId: number) {
-    return this.childrenService.findAllByUserId(userId);
-  }
 
   @Post()
   @ApiBody({ type: CreateChildDto })
@@ -96,6 +74,30 @@ export class ChildrenController {
       createChildDto.avatarUrl = `${req.headers.host}/${file.path}`;
     }
     return this.childrenService.createChild(createChildDto, userId);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Lấy thông tin cơ bản của 1 children qua id',
+  })
+  async getChild(@Param('id') id: number): Promise<Child> {
+    return this.childrenService.findOneById(id);
+  }
+
+  @Get(':userId')
+  @ApiOperation({
+    summary: 'Lấy danh sách tất cả children theo user id',
+  })
+  async getAllChildrenByUserId(@Param('userId') userId: number) {
+    return this.childrenService.findAllByUserId(userId);
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Lấy danh sách tất cả children trong database',
+  })
+  async getAllChildren() {
+    return this.childrenService.findAll();
   }
 
   @Put(':id')
