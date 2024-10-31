@@ -74,13 +74,18 @@ export class AuthController {
     summary: 'Đăng nhập qua Gmail trên Web',
   })
   googleAuthCallback(@Req() req, @Res() res) {
-    const googleToken = req.user.accessToken;
-    const googleRefreshToken = req.user.refreshToken;
-    res.cookie('access_token', googleToken, { httpOnly: true });
-    res.cookie('refresh_token', googleRefreshToken, {
-      httpOnly: true,
-    });
-    res.redirect('/auth/google/profile');
+    try {
+      const googleToken = req.user.accessToken;
+      const googleRefreshToken = req.user.refreshToken;
+      res.cookie('access_token', googleToken, { httpOnly: true });
+      res.cookie('refresh_token', googleRefreshToken, {
+        httpOnly: true,
+      });
+      res.redirect('/auth/google/profile');
+    } catch (e) {
+      console.log('Error GET google/callback', e);
+      throw new UnauthorizedException('Error GET google/callback');
+    }
   }
 
   @UseGuards(CheckTokenExpiryGuard)
@@ -89,11 +94,16 @@ export class AuthController {
     summary: 'Trả về thông tin của Gmail profile sau khi đăng nhập trên Web',
   })
   async getGoogleProfile(@Req() req) {
-    const accessToken = req.cookies['access_token'];
-    if (accessToken) {
-      return (await this.authService.getGoogleProfile(accessToken)).data;
-    } else {
-      throw new UnauthorizedException('No access token');
+    try {
+      const accessToken = req.cookies['access_token'];
+      if (accessToken) {
+        return (await this.authService.getGoogleProfile(accessToken)).data;
+      } else {
+        throw new UnauthorizedException('No access token');
+      }
+    } catch (e) {
+      console.log('Error GET google/profile', e);
+      throw new UnauthorizedException('Error GET google/profile');
     }
   }
 
@@ -102,11 +112,16 @@ export class AuthController {
     summary: 'Đăng xuất Gmail sau khi đăng nhập trên Web',
   })
   async logout(@Req() req, @Res() res) {
-    const refreshGoogleToken = req.cookies['refresh_token'];
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    await this.authService.revokeGoogleToken(refreshGoogleToken);
-    res.redirect('/');
+    try {
+      const refreshGoogleToken = req.cookies['refresh_token'];
+      res.clearCookie('access_token');
+      res.clearCookie('refresh_token');
+      await this.authService.revokeGoogleToken(refreshGoogleToken);
+      res.redirect('/');
+    } catch (e) {
+      console.log('Error GET google/logout', e);
+      throw new UnauthorizedException('Error GET google/logout');
+    }
   }
   // --- Google end ---
 
@@ -128,11 +143,16 @@ export class AuthController {
     summary: 'Đăng nhập qua Facebook dành cho Web',
   })
   facebookAuthCallback(@Req() req) {
-    console.log(req.user);
-    return {
-      statusCode: HttpStatus.OK,
-      data: req.user,
-    };
+    try {
+      console.log(req.user);
+      return {
+        statusCode: HttpStatus.OK,
+        data: req.user,
+      };
+    } catch (e) {
+      console.log('Error GET facebook/callback', e);
+      throw new UnauthorizedException('Error GET facebook/callback');
+    }
   }
   // --- Facebook end ---
 
