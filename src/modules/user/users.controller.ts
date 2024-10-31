@@ -107,7 +107,7 @@ export class UsersController {
       ) {
         this.fileUploadsService.deleteFile(currentUser.avatarUrl);
       }
-      updateUserDto.avatarUrl = `${req.headers.host}/${file.path}`;
+      updateUserDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
     }
 
     // Chỉ cập nhật những trường có giá trị trong updateUserDto

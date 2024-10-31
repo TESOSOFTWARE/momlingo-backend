@@ -126,13 +126,13 @@ export class BabyTrackersController {
     @Req() req,
   ) {
     if (files.thumbnail3DMom[0]) {
-      createBabyTrackerDto.thumbnail3DUrlMom = `${req.headers.host}/${files.thumbnail3DMom[0].path}`;
+      createBabyTrackerDto.thumbnail3DUrlMom = `${req.protocol}://${req.headers.host}/${files.thumbnail3DMom[0].path}`;
     }
     if (files.thumbnail3DBaby[0]) {
-      createBabyTrackerDto.thumbnail3DUrlBaby = `${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
+      createBabyTrackerDto.thumbnail3DUrlBaby = `${req.protocol}://${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
     }
     if (files.symbolicImageBaby[0]) {
-      createBabyTrackerDto.symbolicImageUrl = `${req.headers.host}/${files.symbolicImageBaby[0].path}`;
+      createBabyTrackerDto.symbolicImageUrl = `${req.protocol}://${req.headers.host}/${files.symbolicImageBaby[0].path}`;
     }
     // TODO, change to WeekGuard later
     const existingTracker = await this.babyTrackersService.findOneByWeek(
@@ -212,7 +212,7 @@ export class BabyTrackersController {
     console.log('existingTracker', existingTracker);
 
     if (files.thumbnail3DMom[0]) {
-      updateBabyTrackerDto.thumbnail3DUrlMom = `${req.headers.host}/${files.thumbnail3DMom[0].path}`;
+      updateBabyTrackerDto.thumbnail3DUrlMom = `${req.protocol}://${req.headers.host}/${files.thumbnail3DMom[0].path}`;
       if (existingTracker) {
         this.fileUploadsService.deleteFile(
           existingTracker.momInfo.thumbnail3DUrl,
@@ -220,7 +220,7 @@ export class BabyTrackersController {
       }
     }
     if (files.thumbnail3DBaby[0]) {
-      updateBabyTrackerDto.thumbnail3DUrlBaby = `${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
+      updateBabyTrackerDto.thumbnail3DUrlBaby = `${req.protocol}://${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
       if (existingTracker) {
         this.fileUploadsService.deleteFile(
           existingTracker.babyInfo.thumbnail3DUrl,
@@ -228,7 +228,7 @@ export class BabyTrackersController {
       }
     }
     if (files.symbolicImageBaby[0]) {
-      updateBabyTrackerDto.symbolicImageUrl = `${req.headers.host}/${files.symbolicImageBaby[0].path}`;
+      updateBabyTrackerDto.symbolicImageUrl = `${req.protocol}://${req.headers.host}/${files.symbolicImageBaby[0].path}`;
       if (existingTracker) {
         this.fileUploadsService.deleteFile(
           existingTracker.babyInfo.symbolicImageUrl,
@@ -289,7 +289,7 @@ export class BabyTrackersController {
       if (currentChild.avatarUrl) {
         this.fileUploadsService.deleteFile(currentChild.avatarUrl);
       }
-      updateChildDto.avatarUrl = `${req.headers.host}/${file.path}`;
+      updateChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
     }
 
     // Chỉ cập nhật những trường có giá trị trong updateChildDto

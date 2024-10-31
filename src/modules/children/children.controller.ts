@@ -71,7 +71,7 @@ export class ChildrenController {
   ): Promise<Child> {
     const userId = req.user.id;
     if (file) {
-      createChildDto.avatarUrl = `${req.headers.host}/${file.path}`;
+      createChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
     }
     return this.childrenService.createChild(createChildDto, userId);
   }
@@ -123,7 +123,7 @@ export class ChildrenController {
       if (currentChild.avatarUrl) {
         this.fileUploadsService.deleteFile(currentChild.avatarUrl);
       }
-      updateChildDto.avatarUrl = `${req.headers.host}/${file.path}`;
+      updateChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
     }
 
     // Chỉ cập nhật những trường có giá trị trong updateChildDto
