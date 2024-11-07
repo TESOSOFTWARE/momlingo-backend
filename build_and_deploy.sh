@@ -27,8 +27,8 @@
   - ssh -i path/to/your/key.pem ubuntu@your_instance_ip
     For first time on Mac: chmod 400 path/to/your/key.pem
   Ex:
-  ssh -i /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
-  ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
+  ssh -i /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem ec2-user@54.251.243.96
+  ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.251.243.96
 
   chmod 400 /Users/thaikv/Works/Projects/Momlingo/Deploy/Lightsail.pem
   chmod 400 /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem
@@ -90,7 +90,7 @@ Overal Step
   - docker-compose --env-file .env.dev build
   - docker tag momlingo-backend-app:latest thaikvteso/momlingo-be-dev:latest
   - docker push thaikvteso/momlingo-be-dev:latest
-  - ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.169.31.129
+  - ssh -i /Users/thaikv/Works/Home/Momlingo/Deploy/Lightsail.pem ec2-user@54.251.243.96
   - cd to project folder
   - docker pull thaikvteso/momlingo-be-dev:latest
   + mysqldump -u root -p momlingo_db_dev > momlingo_db_dev_backup.sql
