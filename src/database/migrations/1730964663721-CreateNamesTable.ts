@@ -5,7 +5,7 @@ export class CreateNamesTable1730964663721 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE \`names\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` text NOT NULL, \`meaning\` varchar(255) NOT NULL, \`lan\` enum ('vi', 'en') NOT NULL DEFAULT 'vi', \`gender\` enum ('male', 'female') NOT NULL DEFAULT 'female', INDEX \`IDX_a74cd743091a556eb77e02850d\` (\`name\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`names\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(255) NOT NULL, \`meaning\` text NOT NULL, \`lan\` enum ('vi', 'en') NOT NULL DEFAULT 'vi', \`gender\` enum ('male', 'female') NOT NULL DEFAULT 'female', INDEX \`IDX_a74cd743091a556eb77e02850d\` (\`name\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
   }
 

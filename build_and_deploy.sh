@@ -94,7 +94,8 @@ Overal Step
   - cd to project folder
   - docker pull thaikvteso/momlingo-be-dev:latest
   + mysqldump -u root -p momlingo_db_dev > momlingo_db_dev_backup.sql
-  - docker-compose --env-file .env.dev down
+  - docker-compose stop
+   # docker-compose --env-file .env.dev down
   - docker-compose --env-file .env.dev up
 
 Clear cache
