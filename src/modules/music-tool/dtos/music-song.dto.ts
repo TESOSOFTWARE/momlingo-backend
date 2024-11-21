@@ -1,0 +1,26 @@
+// mom-info.dto.ts
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class MusicSongDto {
+  @ApiProperty({ example: 'Cơn mưa ngang qua', description: '' })
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ example: 'Song Tung MTP', description: '' })
+  @IsNotEmpty()
+  artist: string;
+
+  @ApiProperty({ example: 'Song Tung la ca si...', description: '' })
+  @IsOptional()
+  description: string;
+
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+    name: 'file',
+    description: 'File nhạc',
+  })
+  @IsString()
+  fileUrl?: string;
+}

@@ -15,6 +15,7 @@ import { AllExceptionFilter } from './common/filters/all-exception.filter';
 import { BabyTrackersModule } from './modules/baby-tracker/baby-trackers.module';
 import { ChildTrackersModule } from './modules/child-tracker/child-trackers.module';
 import { NamesModule } from './modules/name/names.module';
+import { MusicsModule } from './modules/music-tool/musics.module';
 dotenv.config();
 
 @Module({
@@ -35,6 +36,7 @@ dotenv.config();
     ChildTrackersModule,
     FileUploadModule,
     NamesModule,
+    MusicsModule,
   ],
   controllers: [],
   providers: [

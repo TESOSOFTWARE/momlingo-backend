@@ -68,7 +68,7 @@
     docker exec -it bemomlingodev-app-1 yarn migration:run
   Conect to docker id
     - docker exec -it <container_id> /bin/sh
-    #Ex: docker exec -it 8b534dc7ebe2 /bin/sh
+    #Ex: docker exec -it b0029348d3fe /bin/sh
   Run srcipt on package.json
     - docker exec -it your-container-name yarn run your-migration-script
 
