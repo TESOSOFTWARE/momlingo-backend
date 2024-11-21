@@ -27,7 +27,7 @@ export class MusicCategoryDto {
   @IsOptional()
   thumbnailUrl?: string;
 
-  @ApiPropertyOptional({ example: 'normal' })
+  @ApiProperty({ example: 'normal' })
   @IsEnum(MusicCategoryType)
   type?: MusicCategoryType;
 }

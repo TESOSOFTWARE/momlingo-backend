@@ -11,16 +11,20 @@ export class MusicSongDto {
   @IsNotEmpty()
   artist: string;
 
-  @ApiProperty({ example: 'Song Tung la ca si...', description: '' })
+  @ApiPropertyOptional({ example: 'Song Tung la ca si...', description: '' })
   @IsOptional()
-  description: string;
+  description?: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     type: 'string',
     format: 'binary',
     name: 'file',
     description: 'File nhạc',
   })
   @IsString()
-  fileUrl?: string;
+  @IsOptional()
+  fileUrl: string;
+
+  @ApiProperty({ example: 1, description: '' })
+  categoryId: number;
 }

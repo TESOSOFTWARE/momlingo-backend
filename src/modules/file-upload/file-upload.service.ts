@@ -32,7 +32,28 @@ export function getMulterOptions(folderName: string): MulterOptions {
     },
     fileFilter: (req, file, cb) => {
       if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
-        return cb(new Error('Only image files are allowed!'), false);
+        return cb(new Error('Only jpg|jpeg|png image files are allowed!'), false);
+      }
+      cb(null, true);
+    },
+  };
+}
+
+export function getMulterOptionsForAudio(folderName: string): MulterOptions {
+  return {
+    storage: diskStorage({
+      destination: `./uploads/${folderName}`,
+      filename: (req, file, cb) => {
+        const fileName = `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+        cb(null, fileName);
+      },
+    }),
+    limits: {
+      fileSize: 15 * 1024 * 1024,
+    },
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/\/(mp3|mpeg|wav|ogg)$/)) {
+        return cb(new Error('Only mp3|mpeg|wav|ogg files are allowed!'), false);
       }
       cb(null, true);
     },
