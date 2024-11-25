@@ -25,6 +25,15 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
+
+  // Cấu hình CORS
+  app.enableCors({
+    origin: 'https://admin.momlingo.com', // Chỉ cho phép yêu cầu từ domain này
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Các phương thức HTTP cho phép
+    allowedHeaders: 'Content-Type, Accept, Authorization, Referer', // Cho phép các header cần thiết
+    credentials: true, // Nếu có sử dụng cookies hoặc thông tin xác thực
+  });
+
   await app.listen(3000);
 }
 bootstrap();
