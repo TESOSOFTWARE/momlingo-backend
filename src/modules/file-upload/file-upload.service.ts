@@ -31,9 +31,10 @@ export function getMulterOptions(folderName: string): MulterOptions {
       fileSize: 5 * 1024 * 1024,
     },
     fileFilter: (req, file, cb) => {
-      if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+      // Due mobile is logging file.mimetype application/octet-stream
+      /*if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
         return cb(new Error('Only jpg|jpeg|png image files are allowed!'), false);
-      }
+      }*/
       cb(null, true);
     },
   };
@@ -52,9 +53,10 @@ export function getMulterOptionsForAudio(folderName: string): MulterOptions {
       fileSize: 15 * 1024 * 1024,
     },
     fileFilter: (req, file, cb) => {
-      if (!file.mimetype.match(/\/(mp3|mpeg|wav|ogg)$/)) {
+      // Due mobile is logging file.mimetype application/octet-stream
+      /*if (!file.mimetype.match(/\/(mp3|mpeg|wav|ogg)$/)) {
         return cb(new Error('Only mp3|mpeg|wav|ogg files are allowed!'), false);
-      }
+      }*/
       cb(null, true);
     },
   };
