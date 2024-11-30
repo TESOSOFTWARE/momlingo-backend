@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { UserWithChildren } from './interfaces/user-with-children.interface';
 import { UpdateUserDto } from './dtos/update_user.dto';
 import { Gender } from '../../enums/gender.enum';
@@ -11,20 +11,23 @@ import { FileUploadService } from '../file-upload/file-upload.service';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    public usersRepository: Repository<User>,
     private fileUploadService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
 
-  findOneByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ email });
+  findOneByEmail(email: string, manager?: EntityManager): Promise<User | null> {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
+    return repo.findOneBy({ email });
   }
 
-  findOneById(id: number): Promise<User | null> {
-    return this.usersRepository.findOneBy({ id });
+  findOneById(id: number, manager?: EntityManager): Promise<User | null> {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
+    return repo.findOneBy({ id });
   }
 
   async create(userData: Partial<User>): Promise<UserWithChildren> {
@@ -37,9 +40,57 @@ export class UsersService {
     } as UserWithChildren;
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    await this.usersRepository.update(id, updateUserDto);
-    return this.usersRepository.findOneBy({ id });
+  async updateUser(
+    id: number,
+    updateUserDto: UpdateUserDto,
+    file: Express.Multer.File,
+    req: any,
+  ): Promise<User> {
+    return this.usersRepository.manager.transaction(async (manager: EntityManager) => {
+      try {
+        const currentUser = await this.findOneById(id, manager);
+
+        if (!currentUser) {
+          throw new Error(`User with ID ${id} not found`);
+        }
+
+        let oldAvatarUrl: string | null = null;
+
+        if (file) {
+          if (
+            currentUser.avatarUrl &&
+            currentUser.avatarUrl.includes(req.headers.host)
+          ) {
+            oldAvatarUrl = currentUser.avatarUrl;
+          }
+
+          updateUserDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+        }
+        const updatedUser = { ...currentUser, ...updateUserDto };
+        await manager.getRepository(User).update(id, updatedUser);
+
+        try {
+          if (oldAvatarUrl) {
+            await this.fileUploadService.deleteFile(oldAvatarUrl);
+          }
+        } catch (deleteError) {
+          console.error('Error deleting old avatar:', deleteError.message);
+        }
+
+        return this.getUser(req.user.id, manager);
+      } catch (e) {
+        if (file) {
+          await this.fileUploadService.deleteFile(file.path);
+        }
+        throw e;
+      }
+    });
+  }
+
+  private async getUser(id: number, manager?: EntityManager): Promise<User> {
+    return manager
+      ? this.findOneById(id, manager)
+      : this.findOneById(id);
   }
 
   async findUserWithPartnerAndChildrenById(

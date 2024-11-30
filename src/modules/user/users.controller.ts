@@ -98,23 +98,7 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<User> {
-    const currentUser = await this.usersService.findOneById(id);
-
-    if (file) {
-      if (
-        currentUser.avatarUrl &&
-        currentUser.avatarUrl.includes(req.headers.host)
-      ) {
-        this.fileUploadsService.deleteFile(currentUser.avatarUrl);
-      }
-      updateUserDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
-    }
-
-    // Chỉ cập nhật những trường có giá trị trong updateUserDto
-    const updatedUser = { ...currentUser, ...updateUserDto };
-
-    await this.usersService.updateUser(id, updatedUser);
-    return this.getUser(req.user.id);
+    return this.usersService.updateUser(id, updateUserDto, file, req);
   }
 
   @Delete(':id')

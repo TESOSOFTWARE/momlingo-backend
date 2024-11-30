@@ -7,14 +7,18 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { HttpExceptionFilter } from './http-exception.filter';
+import { FileUploadService } from '../../modules/file-upload/file-upload.service';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  constructor(private readonly fileUploadService: FileUploadService) {}
+
+  async catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -42,6 +46,19 @@ export class AllExceptionFilter implements ExceptionFilter {
     this.logger.error(
       `HTTP Status: ${status} Error Message: ${message}`,
     );
+
+    // Kiểm tra xem có file trong request không và xóa chúng nếu có
+    const files = request['files'] || (request['file'] ? [request['file']] : null); // Cả trường hợp file và files
+
+    if (files) {
+      for (const file of files) {
+        try {
+          await this.fileUploadService.deleteFile(file.path); // Xóa từng file
+        } catch (deleteError) {
+          console.error('Error deleting uploaded file:', deleteError.message);
+        }
+      }
+    }
 
     response.status(status).json({
       message: message,
