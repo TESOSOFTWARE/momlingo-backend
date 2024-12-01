@@ -1,25 +1,23 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { Child } from './entities/child.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { Gender } from '../../enums/gender.enum';
 import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
+import { FileUploadService } from '../file-upload/file-upload.service';
 
 @Injectable()
 export class ChildrenService {
   constructor(
     @InjectRepository(Child)
     private childrenRepository: Repository<Child>,
-
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-  ) {}
+    private fileUploadService: FileUploadService,
+  ) {
+  }
 
   findAll(): Promise<Child[]> {
     return this.childrenRepository.find();
@@ -31,64 +29,83 @@ export class ChildrenService {
     });
   }
 
-  findOneById(id: number): Promise<Child | null> {
-    return this.childrenRepository.findOneBy({ id });
-  }
-
-  create(childData: Partial<Child>): Promise<Child> {
-    const child = this.childrenRepository.create(childData);
-    return this.childrenRepository.save(child);
-  }
-
-  update(
-    userId: number,
-    userInformation: Partial<Child>,
-  ): Promise<UpdateResult> {
-    return this.childrenRepository.update(userId, userInformation);
+  async findOneById(id: number): Promise<Child | null> {
+    const child = await this.childrenRepository.findOneBy({ id });
+    if (!child) {
+      throw new NotFoundException('Child not found');
+    }
+    return child;
   }
 
   async createChild(
     createChildDto: CreateChildDto,
     userId: number,
+    file: Express.Multer.File,
+    req: any,
   ): Promise<Child> {
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
+    try {
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      if (file) {
+        createChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      }
+      const child = this.childrenRepository.create({
+        ...createChildDto,
+        mother: user.gender === 'female' ? user : null,
+        father: user.gender === 'male' ? user : null,
+      });
+      return this.childrenRepository.save(child);
+    } catch (e) {
+      if (file) {
+        await this.fileUploadService.deleteFile(file.path);
+      }
+      throw e;
     }
-    const child = this.childrenRepository.create({
-      ...createChildDto,
-      mother: user.gender === 'female' ? user : null,
-      father: user.gender === 'male' ? user : null,
-    });
-    return await this.childrenRepository.save(child);
   }
 
   async updateChild(
     id: number,
     updateChildDto: UpdateChildDto,
     userId: number,
+    file: Express.Multer.File,
+    req: any,
   ): Promise<Child> {
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
+    try {
+      const currentChild = await this.findOneById(id);
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (file) {
+        if (currentChild.avatarUrl) {
+          this.fileUploadService.deleteFile(currentChild.avatarUrl);
+        }
+        updateChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      }
+      const updatedChild = { ...currentChild, ...updateChildDto };
+      return this.childrenRepository.save(updatedChild);
+    } catch (e) {
+      if (file) {
+        await this.fileUploadService.deleteFile(file.path);
+      }
+      throw e;
     }
-    const child = await this.childrenRepository.findOne({ where: { id } });
-    if (!child) {
-      throw new NotFoundException('Child not found');
-    }
-    Object.assign(child, updateChildDto);
-    return this.childrenRepository.save(child);
   }
 
-  async deleteChild(id: number, userId: number): Promise<void> {
+  async deleteChild(
+    id: number,
+    req: any,
+  ): Promise<Child> {
+    const userId = req.user.id;
+    const child = await this.findOneById(id);
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new NotFoundException('User not found');
     }
-    const child = await this.childrenRepository.findOne({ where: { id } });
-    if (!child) {
-      throw new NotFoundException('Child not found');
-    }
+
     if (
       (child.gender == Gender.FEMALE &&
         child.mother != null &&
@@ -97,10 +114,13 @@ export class ChildrenService {
         child.father != null &&
         child.father.id !== userId)
     ) {
-      throw new UnauthorizedException(
+      throw new NotAcceptableException(
         'You are not authorized to delete this child',
       );
     }
-    await this.childrenRepository.remove(child);
+    if (child.avatarUrl) {
+      this.fileUploadService.deleteFile(child.avatarUrl);
+    }
+    return this.childrenRepository.remove(child);
   }
 }

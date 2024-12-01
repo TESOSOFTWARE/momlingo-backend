@@ -70,17 +70,14 @@ export class ChildrenController {
     @Req() req,
   ): Promise<Child> {
     const userId = req.user.id;
-    if (file) {
-      createChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
-    }
-    return this.childrenService.createChild(createChildDto, userId);
+    return this.childrenService.createChild(createChildDto, userId, file, req);
   }
 
   @Get(':id')
   @ApiOperation({
     summary: 'Lấy thông tin cơ bản của 1 children qua id',
   })
-  async getChild(@Param('id') id: number): Promise<Child> {
+  async getChild(@Param('id') id: number): Promise<Child | null> {
     return this.childrenService.findOneById(id);
   }
 
@@ -117,20 +114,8 @@ export class ChildrenController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<Child> {
-    const currentChild = await this.childrenService.findOneById(id);
-
-    if (file) {
-      if (currentChild.avatarUrl) {
-        this.fileUploadsService.deleteFile(currentChild.avatarUrl);
-      }
-      updateChildDto.avatarUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
-    }
-
-    // Chỉ cập nhật những trường có giá trị trong updateChildDto
-    const updatedChild = { ...currentChild, ...updateChildDto };
-
     const userId = req.user.id;
-    return this.childrenService.updateChild(id, updatedChild, userId);
+    return this.childrenService.updateChild(id, updateChildDto, userId, file, req);
   }
 
   @Delete(':id')
@@ -141,12 +126,7 @@ export class ChildrenController {
     status: 200,
     description: 'Không trả về response, cứ success là thành công',
   })
-  async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
-    const userId = req.user.id;
-    const currentChild = await this.childrenService.findOneById(id);
-    if (currentChild.avatarUrl) {
-      this.fileUploadsService.deleteFile(currentChild.avatarUrl);
-    }
-    return this.childrenService.deleteChild(id, userId);
+  async deleteChild(@Param('id') id: number, @Req() req): Promise<Child> {
+    return this.childrenService.deleteChild(id, req);
   }
 }

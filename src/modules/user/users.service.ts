@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -20,14 +20,22 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  findOneByEmail(email: string, manager?: EntityManager): Promise<User | null> {
+  async findOneByEmail(email: string, manager?: EntityManager): Promise<User | null> {
     const repo = manager ? manager.getRepository(User) : this.usersRepository;
-    return repo.findOneBy({ email });
+    const user = await repo.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
-  findOneById(id: number, manager?: EntityManager): Promise<User | null> {
+  async findOneById(id: number, manager?: EntityManager): Promise<User | null> {
     const repo = manager ? manager.getRepository(User) : this.usersRepository;
-    return repo.findOneBy({ id });
+    const user = await repo.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   async create(userData: Partial<User>): Promise<UserWithChildren> {
@@ -49,10 +57,6 @@ export class UsersService {
     return this.usersRepository.manager.transaction(async (manager: EntityManager) => {
       try {
         const currentUser = await this.findOneById(id, manager);
-
-        if (!currentUser) {
-          throw new Error(`User with ID ${id} not found`);
-        }
 
         let oldAvatarUrl: string | null = null;
 
@@ -101,7 +105,7 @@ export class UsersService {
       relations: ['partner', 'childrenAsMother', 'childrenAsFather'],
     });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
     const children =
       user.gender === Gender.FEMALE
@@ -121,7 +125,7 @@ export class UsersService {
       relations: ['partner', 'childrenAsMother', 'childrenAsFather'],
     });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
     const children =
       user.gender === Gender.FEMALE
@@ -134,10 +138,7 @@ export class UsersService {
   }
 
   async deleteUser(id: number): Promise<void> {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.findOneById(id);
     if (user.avatarUrl) {
       this.fileUploadService.deleteFile(user.avatarUrl);
     }
