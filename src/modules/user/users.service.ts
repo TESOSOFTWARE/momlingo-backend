@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dtos/update_user.dto';
 import { Gender } from '../../enums/gender.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { ChildrenService } from '../children/children.service';
+import { Child } from '../children/entities/child.entity';
 
 @Injectable()
 export class UsersService {
@@ -140,33 +141,39 @@ export class UsersService {
     } as UserWithChildren;
   }
 
-  async deleteUser(id: number): Promise<void> {
+  async deleteUser(id: number, req: any): Promise<void> {
     return this.usersRepository.manager.transaction(async (manager: EntityManager) => {
-      const user = await manager.getRepository(User).findOne({
-        where: { id: id },
-        relations: ['childrenAsMother', 'childrenAsFather'],
-      });
+      if(req.user.id != id) {
+        throw new NotAcceptableException('You are not authorized to delete this user');
+      }
+
+      const user = await this.getUser(id);
       if (!user) {
         throw new NotFoundException('User not found');
       }
 
-      const children = [
-        ...user.childrenAsMother,
-        ...user.childrenAsFather,
-      ];
-
+      const children = await this.childrenService.findAllByUserId(id);
+      const repoChild = manager.getRepository(Child);
+      const avatarChildList = [];
       for (const child of children) {
-        if (child.mother === user || child.father === user) {
-          const otherParent = child.mother === user ? child.father : child.mother;
+        if(child.avatarUrl) {
+          avatarChildList.push(child.avatarUrl);
+        }
+        if (child.mother?.id == user.id || child.father?.id == user.id) {
+          const otherParent = child.mother?.id == user.id ? child.father : child.mother;
           if (!otherParent) {
-            await this.childrenService.deleteChild(child.id, user.id, manager);
+            await repoChild.remove(child);
           }
         }
       }
 
-      await this.usersRepository.remove(user);
+      await manager.remove(user);
+
       if (user.avatarUrl) {
         this.fileUploadService.deleteFile(user.avatarUrl);
+      }
+      for (const url of avatarChildList) {
+        this.fileUploadService.deleteFile(url);
       }
     });
   }

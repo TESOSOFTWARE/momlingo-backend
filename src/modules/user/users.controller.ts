@@ -45,7 +45,8 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly fileUploadsService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   @Get(':id')
   @ApiOperation({
@@ -109,7 +110,7 @@ export class UsersController {
     status: 200,
     description: 'Không trả về response, cứ success là thành công',
   })
-  async deleteUser(@Param('id') id: number): Promise<void> {
-    return this.usersService.deleteUser(id);
+  async deleteUser(@Param('id') id: number, @Req() req: any): Promise<void> {
+    return this.usersService.deleteUser(id, req);
   }
 }

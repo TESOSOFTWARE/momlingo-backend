@@ -8,6 +8,7 @@ import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { UsersService } from '../user/users.service';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ChildrenService {
@@ -21,18 +22,25 @@ export class ChildrenService {
   }
 
   findAll(): Promise<Child[]> {
-    return this.childrenRepository.find();
+    return this.childrenRepository.find({
+      relations: ['mother', 'father'],
+    });
   }
 
-  findAllByUserId(userId: number): Promise<Child[]> {
-    return this.childrenRepository.find({
+  findAllByUserId(userId: number, manager?: EntityManager): Promise<Child[]> {
+    const repo = manager ? manager.getRepository(Child) : this.childrenRepository;
+    return repo.find({
       where: [{ mother: { id: userId } }, { father: { id: userId } }],
+      relations: ['mother', 'father'],
     });
   }
 
   async findOneById(id: number, manager?: EntityManager): Promise<Child | null> {
     const repo = manager ? manager.getRepository(Child) : this.childrenRepository;
-    const child = await repo.findOneBy({ id });
+    const child = await repo.findOne({
+      where: { id },
+      relations: ['mother', 'father'],
+    });
     if (!child) {
       throw new NotFoundException('Child not found');
     }
@@ -105,16 +113,16 @@ export class ChildrenService {
     const repoUser = manager ? manager.getRepository(User) : this.usersService.usersRepository;
     const repoChild = manager ? manager.getRepository(Child) : this.childrenRepository;
     const child = await this.findOneById(id, manager);
-    const user = repoUser.findOne({ where: { id: userId } });
+    const user = await repoUser.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     if (
-      (child.gender == Gender.FEMALE &&
+      (user.gender == Gender.FEMALE &&
         child.mother != null &&
         child.mother.id !== userId) ||
-      (child.gender == Gender.MALE &&
+      (user.gender == Gender.MALE &&
         child.father != null &&
         child.father.id !== userId)
     ) {

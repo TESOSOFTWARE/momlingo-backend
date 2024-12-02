@@ -80,7 +80,7 @@ export class ChildrenController {
     return this.childrenService.findOneById(id);
   }
 
-  @Get(':userId')
+  @Get('/parents/:userId')
   @ApiOperation({
     summary: 'Lấy danh sách tất cả children theo user id',
   })
@@ -126,6 +126,6 @@ export class ChildrenController {
     description: 'Không trả về response, cứ success là thành công',
   })
   async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
-    return this.childrenService.deleteChild(id, req, req.user.id);
+    return this.childrenService.deleteChild(id, req.user.id, null);
   }
 }
