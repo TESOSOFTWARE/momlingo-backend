@@ -48,9 +48,8 @@ import { UsersService } from '../user/users.service';
 export class ChildrenController {
   constructor(
     private readonly childrenService: ChildrenService,
-    private readonly usersService: UsersService,
-    private readonly fileUploadsService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   @Post()
   @ApiBody({ type: CreateChildDto })
@@ -126,7 +125,7 @@ export class ChildrenController {
     status: 200,
     description: 'Không trả về response, cứ success là thành công',
   })
-  async deleteChild(@Param('id') id: number, @Req() req): Promise<Child> {
-    return this.childrenService.deleteChild(id, req);
+  async deleteChild(@Param('id') id: number, @Req() req): Promise<void> {
+    return this.childrenService.deleteChild(id, req, req.user.id);
   }
 }

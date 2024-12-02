@@ -1,21 +1,22 @@
-import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { Child } from './entities/child.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateChildDto } from './dtos/create-child.dto';
 import { Gender } from '../../enums/gender.enum';
 import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
+import { UsersService } from '../user/users.service';
 
 @Injectable()
 export class ChildrenService {
   constructor(
     @InjectRepository(Child)
-    private childrenRepository: Repository<Child>,
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-    private fileUploadService: FileUploadService,
+    private readonly childrenRepository: Repository<Child>,
+    private readonly fileUploadService: FileUploadService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) {
   }
 
@@ -29,8 +30,9 @@ export class ChildrenService {
     });
   }
 
-  async findOneById(id: number): Promise<Child | null> {
-    const child = await this.childrenRepository.findOneBy({ id });
+  async findOneById(id: number, manager?: EntityManager): Promise<Child | null> {
+    const repo = manager ? manager.getRepository(Child) : this.childrenRepository;
+    const child = await repo.findOneBy({ id });
     if (!child) {
       throw new NotFoundException('Child not found');
     }
@@ -44,7 +46,7 @@ export class ChildrenService {
     req: any,
   ): Promise<Child> {
     try {
-      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      const user = await this.usersService.findOneById(userId);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -74,7 +76,7 @@ export class ChildrenService {
   ): Promise<Child> {
     try {
       const currentChild = await this.findOneById(id);
-      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      const user = await this.usersService.findOneById(userId);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -97,11 +99,13 @@ export class ChildrenService {
 
   async deleteChild(
     id: number,
-    req: any,
-  ): Promise<Child> {
-    const userId = req.user.id;
-    const child = await this.findOneById(id);
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    userId: number,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const repoUser = manager ? manager.getRepository(User) : this.usersService.usersRepository;
+    const repoChild = manager ? manager.getRepository(Child) : this.childrenRepository;
+    const child = await this.findOneById(id, manager);
+    const user = repoUser.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -118,9 +122,9 @@ export class ChildrenService {
         'You are not authorized to delete this child',
       );
     }
+    await repoChild.remove(child);
     if (child.avatarUrl) {
       this.fileUploadService.deleteFile(child.avatarUrl);
     }
-    return this.childrenRepository.remove(child);
   }
 }

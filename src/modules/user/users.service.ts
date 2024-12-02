@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -6,13 +6,16 @@ import { UserWithChildren } from './interfaces/user-with-children.interface';
 import { UpdateUserDto } from './dtos/update_user.dto';
 import { Gender } from '../../enums/gender.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
+import { ChildrenService } from '../children/children.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    public usersRepository: Repository<User>,
-    private fileUploadService: FileUploadService,
+    public readonly usersRepository: Repository<User>,
+    private readonly fileUploadService: FileUploadService,
+    @Inject(forwardRef(() => ChildrenService))
+    private readonly childrenService: ChildrenService,
   ) {
   }
 
@@ -138,10 +141,33 @@ export class UsersService {
   }
 
   async deleteUser(id: number): Promise<void> {
-    const user = await this.findOneById(id);
-    if (user.avatarUrl) {
-      this.fileUploadService.deleteFile(user.avatarUrl);
-    }
-    await this.usersRepository.remove(user);
+    return this.usersRepository.manager.transaction(async (manager: EntityManager) => {
+      const user = await manager.getRepository(User).findOne({
+        where: { id: id },
+        relations: ['childrenAsMother', 'childrenAsFather'],
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const children = [
+        ...user.childrenAsMother,
+        ...user.childrenAsFather,
+      ];
+
+      for (const child of children) {
+        if (child.mother === user || child.father === user) {
+          const otherParent = child.mother === user ? child.father : child.mother;
+          if (!otherParent) {
+            await this.childrenService.deleteChild(child.id, user.id, manager);
+          }
+        }
+      }
+
+      await this.usersRepository.remove(user);
+      if (user.avatarUrl) {
+        this.fileUploadService.deleteFile(user.avatarUrl);
+      }
+    });
   }
 }
