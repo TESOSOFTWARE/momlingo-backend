@@ -49,7 +49,8 @@ export class MusicsController {
   constructor(
     private readonly musicsService: MusicsService,
     private readonly fileUploadsService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   /// --- Controller for Category - START ---
   @Post('/category')
@@ -63,10 +64,17 @@ export class MusicsController {
     @Body() categoryDto: MusicCategoryDto,
     @Req() req,
   ): Promise<MusicCategory> {
-    if (file) {
-      categoryDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+    try {
+      if (file) {
+        categoryDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      }
+      return this.musicsService.createCategory(categoryDto);
+    } catch (e) {
+      if (file) {
+        this.fileUploadsService.deleteFile(categoryDto.thumbnailUrl);
+      }
+      throw e;
     }
-    return this.musicsService.createCategory(categoryDto);
   }
 
   @Get('/category')
@@ -94,16 +102,22 @@ export class MusicsController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<MusicCategory> {
-    const category = await this.musicsService.findOneCategory(id);
-
-    if (file) {
+    try {
+      const category = await this.musicsService.findOneCategory(id);
+      if (file) {
+        categoryDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      }
+      const updateCategory = await this.musicsService.updateCategory(id, categoryDto);
       if (category.thumbnailUrl) {
         this.fileUploadsService.deleteFile(category.thumbnailUrl);
       }
-      categoryDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      return updateCategory;
+    } catch (e) {
+      if (file) {
+        this.fileUploadsService.deleteFile(categoryDto.thumbnailUrl);
+      }
+      throw e;
     }
-
-    return this.musicsService.updateCategory(id, categoryDto);
   }
 
   @Delete('/category/:id')
@@ -122,6 +136,7 @@ export class MusicsController {
   ): Promise<MusicCategory[]> {
     return this.musicsService.findCategoryByName(name);
   }
+
   /// --- Controller for Category - END ---
 
   /// --- Controller for Song - START ---
@@ -136,10 +151,17 @@ export class MusicsController {
     @Body() songDto: MusicSongDto,
     @Req() req,
   ): Promise<MusicSong> {
-    if (file) {
-      songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+    try {
+      if (file) {
+        songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      }
+      return this.musicsService.createSong(songDto);
+    } catch (e) {
+      if(file) {
+        this.fileUploadsService.deleteFile(songDto.fileUrl);
+      }
+      throw e;
     }
-    return this.musicsService.createSong(songDto);
   }
 
   @Get('/song')
@@ -178,16 +200,24 @@ export class MusicsController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<MusicSong> {
-    const song = await this.musicsService.findOneSong(id);
-
-    if (file) {
-      if (song.fileUrl) {
-        this.fileUploadsService.deleteFile(song.fileUrl);
+    try {
+      const song = await this.musicsService.findOneSong(id);
+      if (file) {
+        songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
-      songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
+      const songRes = await this.musicsService.updateSong(id, songDto);
+      if(file) {
+        if (song.fileUrl) {
+          this.fileUploadsService.deleteFile(song.fileUrl);
+        }
+      }
+      return songRes;
+    } catch (e) {
+      if (file) {
+        this.fileUploadsService.deleteFile(songDto.fileUrl);
+      }
+      throw e;
     }
-
-    return this.musicsService.updateSong(id, songDto);
   }
 
   @Delete('/song/:id')
@@ -195,10 +225,10 @@ export class MusicsController {
   @ApiResponse({ status: 404, description: 'Tên không tìm thấy' })
   async removeSong(@Param('id') id: number): Promise<void> {
     const song = await this.musicsService.findOneSong(id);
+    await this.musicsService.removeSong(id);
     if (song.fileUrl) {
       this.fileUploadsService.deleteFile(song.fileUrl);
     }
-    return this.musicsService.removeSong(id);
   }
 
   @Get('/search/song')
@@ -208,5 +238,6 @@ export class MusicsController {
   async searchSongNames(@Query('name') name: string): Promise<MusicSong[]> {
     return this.musicsService.findSongByName(name);
   }
+
   /// --- Controller for Song - END ---
 }
