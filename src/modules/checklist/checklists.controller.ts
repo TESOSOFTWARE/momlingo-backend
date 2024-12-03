@@ -33,6 +33,12 @@ export class ChecklistsController {
     return this.checklistsService.findAllChecklist();
   }
 
+  @Get('/checklist/userId/:userId')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả Checklist theo user id' })
+  async findAllChecklistByUserId(@Param('userId') userId: number): Promise<Checklist[]> {
+    return this.checklistsService.findAllChecklistByUserId(userId);
+  }
+
   @Get('/checklist/:id')
   @ApiOperation({ summary: 'Lấy thông tin Checklist theo ID' })
   async findOneChecklist(@Param('id') id: number): Promise<Checklist> {

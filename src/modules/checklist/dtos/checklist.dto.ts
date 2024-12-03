@@ -7,6 +7,10 @@ export class ChecklistDto {
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({ example: 1, description: 'Id của user tạo' })
+  @IsNotEmpty()
+  userId: number;
+
   @ApiProperty({ example: 'Sức khoẻ bầu tháng 1', description: '' })
   description: string;
 

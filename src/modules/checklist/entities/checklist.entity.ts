@@ -15,6 +15,9 @@ export class Checklist {
   @Column()
   name: string;
 
+  @Column()
+  userId: number;
+
   @Column({ type: 'text', nullable: true })
   description: string;
 

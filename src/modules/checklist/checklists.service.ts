@@ -17,7 +17,8 @@ export class ChecklistsService {
     private checklistRepository: Repository<Checklist>,
     @InjectRepository(ChecklistItem)
     private checklistItemRepository: Repository<ChecklistItem>,
-  ) {}
+  ) {
+  }
 
   /// --- New Checklist service START ---
   async createChecklist(checklistDto: ChecklistDto): Promise<Checklist> {
@@ -35,6 +36,12 @@ export class ChecklistsService {
 
   async findAllChecklist(): Promise<Checklist[]> {
     return this.checklistRepository.find();
+  }
+
+  async findAllChecklistByUserId(userId: number): Promise<Checklist[]> {
+    return this.checklistRepository.find(
+      { where: { userId: userId } },
+    );
   }
 
   async findOneChecklist(id: number): Promise<Checklist> {
@@ -61,6 +68,7 @@ export class ChecklistsService {
     }
     await this.checklistRepository.delete(checklistId);
   }
+
   /// --- New Checklist service END ---
 
   /// --- ChecklistItem service START ---
@@ -113,5 +121,6 @@ export class ChecklistsService {
     const checklistItem = await this.findOneChecklistItem(id);
     await this.checklistItemRepository.remove(checklistItem);
   }
+
   /// --- ChecklistItem service END ---
 }

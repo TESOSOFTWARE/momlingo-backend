@@ -8,7 +8,6 @@ import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { UsersService } from '../user/users.service';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ChildrenService {
