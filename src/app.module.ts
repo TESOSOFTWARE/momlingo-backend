@@ -18,6 +18,7 @@ import { NamesModule } from './modules/name/names.module';
 import { MusicsModule } from './modules/music-tool/musics.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { NewsModule } from './modules/news/news.module';
+import { ChecklistsModule } from './modules/checklist/checklists.module';
 dotenv.config();
 
 @Module({
@@ -40,6 +41,7 @@ dotenv.config();
     NamesModule,
     MusicsModule,
     NewsModule,
+    ChecklistsModule,
   ],
   controllers: [],
   providers: [
