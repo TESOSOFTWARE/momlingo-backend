@@ -70,11 +70,6 @@ export class MusicsService {
         throw new NotFoundException('Category not found');
       }
 
-      // Xoá ảnh thumbnail của category nếu có
-      if (category.thumbnailUrl) {
-        this.fileUploadsService.deleteFile(category.thumbnailUrl);
-      }
-
       // Lấy danh sách bài hát liên quan đến category
       const songs = (await queryRunner.manager.find(MusicSong, {
         where: { category: { id: categoryId } },
@@ -92,11 +87,16 @@ export class MusicsService {
         category: { id: categoryId },
       });
 
-      // Xoá category
-      await queryRunner.manager.delete(MusicCategory, categoryId);
-
       // Commit transaction
       await queryRunner.commitTransaction();
+
+      // Xoá ảnh thumbnail của category nếu có
+      if (category.thumbnailUrl) {
+        this.fileUploadsService.deleteFile(category.thumbnailUrl);
+      }
+
+      // Xoá category
+      await queryRunner.manager.delete(MusicCategory, categoryId);
     } catch (error) {
       // Rollback transaction nếu có lỗi
       await queryRunner.rollbackTransaction();

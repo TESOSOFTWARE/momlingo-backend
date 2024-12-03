@@ -17,6 +17,7 @@ import { ChildTrackersModule } from './modules/child-tracker/child-trackers.modu
 import { NamesModule } from './modules/name/names.module';
 import { MusicsModule } from './modules/music-tool/musics.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { NewsModule } from './modules/news/news.module';
 dotenv.config();
 
 @Module({
@@ -38,6 +39,7 @@ dotenv.config();
     FileUploadModule,
     NamesModule,
     MusicsModule,
+    NewsModule,
   ],
   controllers: [],
   providers: [
