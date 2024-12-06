@@ -13,7 +13,7 @@ import { NamesService } from './names.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import {
   ApiBearerAuth,
-  ApiOperation,
+  ApiOperation, ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -46,8 +46,18 @@ export class NamesController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách tất cả tên' })
-  async findAll(): Promise<Name[]> {
-    return this.namesService.findAll();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllName(
+    @Query('currentPage') currentPage = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.namesService.getAllName(pageNumber);
   }
 
   @Get(':id')

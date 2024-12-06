@@ -5,21 +5,34 @@ import { NameDto } from './dtos/name.dto';
 import { Name } from './entities/name.entity';
 import { Gender } from '../../enums/gender.enum';
 import { Language } from '../../enums/language.enum';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class NamesService {
   constructor(
     @InjectRepository(Name)
     private nameRepository: Repository<Name>,
-  ) {}
+  ) {
+  }
 
   async create(nameDto: NameDto): Promise<Name> {
     const name = this.nameRepository.create(nameDto);
     return await this.nameRepository.save(name);
   }
 
-  async findAll(): Promise<Name[]> {
-    return this.nameRepository.find();
+  async getAllName(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.nameRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOne(id: number): Promise<Name> {
