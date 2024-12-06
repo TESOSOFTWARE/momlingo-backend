@@ -6,7 +6,7 @@ import {
   Param,
   Patch,
   Post,
-  Put,
+  Put, Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -20,7 +20,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiOperation,
+  ApiOperation, ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -92,8 +92,18 @@ export class ChildrenController {
   @ApiOperation({
     summary: 'Lấy danh sách tất cả children trong database',
   })
-  async getAllChildren() {
-    return this.childrenService.findAll();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async getAllChildren(
+    @Query('currentPage') currentPage = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.childrenService.getAllChildren(pageNumber);
   }
 
   @Put(':id')

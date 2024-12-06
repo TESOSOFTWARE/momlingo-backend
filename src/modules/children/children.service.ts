@@ -8,6 +8,7 @@ import { User } from '../user/entities/user.entity';
 import { UpdateChildDto } from './dtos/update-child.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { UsersService } from '../user/users.service';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class ChildrenService {
@@ -24,6 +25,22 @@ export class ChildrenService {
     return this.childrenRepository.find({
       relations: ['mother', 'father'],
     });
+  }
+
+  async getAllChildren(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.childrenRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      relations: ['mother', 'father'],
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   findAllByUserId(userId: number, manager?: EntityManager): Promise<Child[]> {
