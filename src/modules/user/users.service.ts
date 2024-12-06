@@ -8,6 +8,7 @@ import { Gender } from '../../enums/gender.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { ChildrenService } from '../children/children.service';
 import { Child } from '../children/entities/child.entity';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,21 @@ export class UsersService {
 
   findAll(): Promise<User[]> {
     return this.usersRepository.find();
+  }
+
+  async getUsers(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.usersRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOneByEmail(email: string, manager?: EntityManager): Promise<User | null> {

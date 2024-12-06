@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  Put,
+  Put, Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -22,7 +22,7 @@ import {
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiOperation,
+  ApiOperation, ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -77,8 +77,16 @@ export class UsersController {
   @ApiOperation({
     summary: 'Lấy tất cả danh sách user, không có children, dành cho Admin',
   })
-  async getAllUsers(): Promise<User[]> {
-    return this.usersService.findAll();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async getAllUsers(@Query('currentPage') currentPage = 1) {
+    const pageNumber = Number(currentPage);
+    return this.usersService.getUsers(pageNumber);
   }
 
   @Put(':id')

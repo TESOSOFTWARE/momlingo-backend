@@ -23,7 +23,8 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+  }
 
   // --- Email - start ---
   async login(email: string, password: string): Promise<LoginResponseDTO> {
@@ -40,7 +41,7 @@ export class AuthService {
   }
 
   async register(user: RegisterRequestDTO): Promise<LoginResponseDTO> {
-    const existingUser = await this.usersService.findOneByEmail(user.email);
+    const existingUser = await this.usersService.usersRepository.findOneBy({ email: user.email });
     if (existingUser) {
       throw new BadRequestException('Email đã được đăng ký');
     }
@@ -57,6 +58,7 @@ export class AuthService {
       user: userWithChildren,
     };
   }
+
   // --- Email - end ---
 
   // --- Google - start ---
@@ -150,6 +152,7 @@ export class AuthService {
       console.error('Failed to revoke the token:', error);
     }
   }
+
   // --- Google - end ---
 
   // --- Facebook - start ---
@@ -281,6 +284,7 @@ export class AuthService {
       throw new Error('Invalid ID Token');
     }
   }
+
   // --- Apple - end ---
 
   // Helper
