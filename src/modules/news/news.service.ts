@@ -10,6 +10,7 @@ import { NewCategory } from './entities/new-category.entity';
 import { News } from './entities/news.entity';
 import { NewCategoryDto } from './dtos/new-category.dto';
 import { NewsDto } from './dtos/news.dto';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class NewsService {
@@ -19,7 +20,8 @@ export class NewsService {
     @InjectRepository(News)
     private newsRepository: Repository<News>,
     private readonly fileUploadsService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   /// --- New Category service START ---
   async createCategory(categoryDto: NewCategoryDto): Promise<NewCategory> {
@@ -73,7 +75,7 @@ export class NewsService {
       const newsList = (await queryRunner.manager.find(News, {
         where: { category: { id: categoryId } },
       })) as News[];
-      
+
       // Xoá tất cả tin tức liên quan đến category
       await queryRunner.manager.delete(News, {
         category: { id: categoryId },
@@ -84,7 +86,7 @@ export class NewsService {
 
       // Commit transaction
       await queryRunner.commitTransaction();
-      
+
       // Xoá file ảnh của từng tin tức
       for (const news of newsList) {
         if (news.thumbnailUrl) {
@@ -100,6 +102,7 @@ export class NewsService {
       await queryRunner.release();
     }
   }
+
   /// --- New Category service END ---
 
   /// --- News service START ---
@@ -122,8 +125,19 @@ export class NewsService {
     return this.newsRepository.findOneBy({ id });
   }
 
-  async findAllNews(): Promise<News[]> {
-    return this.newsRepository.find();
+  async findAllNews(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.newsRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOneNews(id: number): Promise<News> {
@@ -134,7 +148,7 @@ export class NewsService {
     return news;
   }
 
-  async findAllNewsByCategoryId(categoryId: number): Promise<News[]> {
+  async findAllNewsByCategoryId(categoryId: number, currentPage: number) {
     const category = await this.newCategoryRepository.findOne({
       where: { id: categoryId },
     });
@@ -142,24 +156,39 @@ export class NewsService {
       throw new NotFoundException('Category not found');
     }
 
-    return this.newsRepository.find({
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.newsRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
       where: { category: { id: categoryId } },
       relations: ['category'],
     });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
-  async findNewsByTitle(title: string): Promise<News[]> {
+  async findNewsByTitle(title: string, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const skip = (currentPage - 1) * limit;
     return this.newsRepository
       .createQueryBuilder('news')
       .where('LOWER(news.title) LIKE :title', {
         title: `%${title.toLowerCase()}%`,
       })
-      .getMany();
+      .skip(skip)
+      .take(currentPage)
+      .getManyAndCount();
   }
 
   async removeNews(id: number): Promise<void> {
     const song = await this.findOneNews(id);
     await this.newsRepository.remove(song);
   }
+
   /// --- Song service END ---
 }

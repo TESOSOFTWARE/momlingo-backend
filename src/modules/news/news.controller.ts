@@ -13,19 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guards/jwt.guard';
-import {
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  FileUploadService,
-  getMulterOptions,
-  getMulterOptionsForAudio,
-} from '../file-upload/file-upload.service';
+import { FileUploadService, getMulterOptions } from '../file-upload/file-upload.service';
 import { NewsService } from './news.service';
 import { NewCategory } from './entities/new-category.entity';
 import { NewCategoryDto } from './dtos/new-category.dto';
@@ -102,6 +92,7 @@ export class NewsController {
   ): Promise<NewCategory[]> {
     return this.newsService.findCategoryByName(name);
   }
+
   /// --- Controller for New Category - END ---
 
   /// --- Controller for News - START ---
@@ -122,7 +113,7 @@ export class NewsController {
       }
       return this.newsService.createNews(newsDto);
     } catch (e) {
-      if(file) {
+      if (file) {
         this.fileUploadsService.deleteFile(newsDto.thumbnailUrl);
       }
       throw e;
@@ -131,14 +122,32 @@ export class NewsController {
 
   @Get('/new')
   @ApiOperation({ summary: 'Lấy danh sách tất cả News' })
-  async findAllNews(): Promise<News[]> {
-    return this.newsService.findAllNews();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllNews(
+    @Query('currentPage') currentPage = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.newsService.findAllNews(pageNumber);
   }
 
   @Get('/new/category/:id')
   @ApiOperation({ summary: 'Lấy danh sách tất cả News theo category' })
-  async findAllNewsByCategoryId(@Param('id') id: number): Promise<News[]> {
-    return this.newsService.findAllNewsByCategoryId(id);
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllNewsByCategoryId(@Param('id') id: number, @Query('currentPage') currentPage = 1) {
+    const pageNumber = Number(currentPage);
+    return this.newsService.findAllNewsByCategoryId(id, pageNumber);
   }
 
   @Get('/new/:id')
@@ -165,7 +174,7 @@ export class NewsController {
         newsDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
       const newsRes = await this.newsService.updateNews(id, newsDto);
-      if(file) {
+      if (file) {
         if (news.thumbnailUrl) {
           this.fileUploadsService.deleteFile(news.thumbnailUrl);
         }
@@ -194,8 +203,17 @@ export class NewsController {
   @ApiOperation({
     summary: 'Tìm News theo title',
   })
-  async searchNewsNames(@Query('title') title: string): Promise<News[]> {
-    return this.newsService.findNewsByTitle(title);
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async searchNewsNames(@Query('title') title: string, @Query('currentPage') currentPage = 1) {
+    const pageNumber = Number(currentPage);
+    return this.newsService.findNewsByTitle(title, pageNumber);
   }
+
   /// --- Controller for News - END ---
 }
