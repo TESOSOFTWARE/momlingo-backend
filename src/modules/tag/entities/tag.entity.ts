@@ -7,7 +7,7 @@ import {
   OneToOne,
   Index,
   OneToMany,
-  JoinColumn, ManyToOne,
+  JoinColumn, ManyToOne, ManyToMany,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
@@ -19,6 +19,7 @@ import { Child } from '../../children/entities/child.entity';
 import { NewCategory } from '../../news/entities/new-category.entity';
 import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
+import { Post } from '../../post/entities/post.entity';
 
 @Entity({ name: 'tags' })
 export class Tag {
@@ -27,4 +28,7 @@ export class Tag {
 
   @Column({ unique: true })
   name: string;
+
+  @ManyToMany(() => Post, (post) => post.tags)
+  posts: Post[];
 }

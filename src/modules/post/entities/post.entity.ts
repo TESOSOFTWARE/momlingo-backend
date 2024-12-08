@@ -7,7 +7,7 @@ import {
   OneToOne,
   Index,
   OneToMany,
-  JoinColumn, ManyToOne,
+  JoinColumn, ManyToOne, ManyToMany, JoinTable,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
@@ -19,6 +19,7 @@ import { Child } from '../../children/entities/child.entity';
 import { NewCategory } from '../../news/entities/new-category.entity';
 import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
+import { Tag } from '../../tag/entities/tag.entity';
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -63,4 +64,8 @@ export class Post {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  @JoinTable({ name: 'post_tags' })
+  tags: Tag[];
 }
