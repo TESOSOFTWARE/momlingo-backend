@@ -36,7 +36,8 @@ import { Language } from '../../enums/language.enum';
 })
 @UseGuards(JwtGuard)
 export class NamesController {
-  constructor(private readonly namesService: NamesService) {}
+  constructor(private readonly namesService: NamesService) {
+  }
 
   @Post()
   @ApiOperation({ summary: 'Tạo mới một tên' })
@@ -88,11 +89,20 @@ export class NamesController {
     summary:
       'Tìm tên chứa các chữ cái từ họ tên, có thể lọc theo giới tính và ngôn ngữ',
   })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
   async searchNames(
     @Query('fullName') fullName: string,
+    @Query('currentPage') currentPage = 1,
     @Query('gender') gender?: Gender,
     @Query('lan') lan?: Language,
-  ): Promise<Name[]> {
-    return this.namesService.findByName(fullName, gender, lan);
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.namesService.findByName(fullName, pageNumber, gender, lan);
   }
 }

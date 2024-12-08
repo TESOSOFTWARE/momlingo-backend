@@ -56,9 +56,10 @@ export class NamesService {
 
   async findByName(
     fullName: string,
+    currentPage: number,
     gender?: Gender,
     lan?: Language,
-  ): Promise<Name[]> {
+  ) {
     if (!fullName) {
       throw new Error('Full name is required');
     }
@@ -84,6 +85,9 @@ export class NamesService {
     if (lan) {
       query.andWhere('name.lan = :lan', { lan });
     }
+
+    const skip = (currentPage - 1) * PAGINATION.LIMIT;
+    query.skip(skip).take(PAGINATION.LIMIT);
 
     // Thực thi truy vấn và trả về kết quả
     return await query.getMany();
