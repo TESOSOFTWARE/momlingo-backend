@@ -175,7 +175,7 @@ export class NewsService {
   async findNewsByTitle(title: string, currentPage: number) {
     const limit = PAGINATION.LIMIT;
     const skip = (currentPage - 1) * limit;
-    return this.newsRepository
+    const [data, total] = await this.newsRepository
       .createQueryBuilder('news')
       .where('LOWER(news.title) LIKE :title', {
         title: `%${title.toLowerCase()}%`,
@@ -183,6 +183,14 @@ export class NewsService {
       .skip(skip)
       .take(currentPage)
       .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async removeNews(id: number): Promise<void> {
