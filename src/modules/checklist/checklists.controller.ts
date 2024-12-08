@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtGuard } from '../auth/guards/jwt.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChecklistsService } from './checklists.service';
 import { ChecklistDto } from './dtos/checklist.dto';
 import { Checklist } from './entities/checklist.entity';
@@ -27,16 +27,27 @@ export class ChecklistsController {
     return this.checklistsService.createChecklist(checklistDto);
   }
 
-  @Get('/checklist')
-  @ApiOperation({ summary: 'Lấy danh sách tất cả Checklist' })
-  async findAllChecklist(): Promise<Checklist[]> {
-    return this.checklistsService.findAllChecklist();
-  }
-
   @Get('/checklist/userId/:userId')
-  @ApiOperation({ summary: 'Lấy danh sách tất cả Checklist theo user id' })
-  async findAllChecklistByUserId(@Param('userId') userId: number): Promise<Checklist[]> {
-    return this.checklistsService.findAllChecklistByUserId(userId);
+  @ApiOperation({ summary: 'Lấy danh sách tất cả Checklist theo user id sắp xếp theo start date tăng dần' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'currentTime',
+    required: false,
+    description: 'currentTime: true(mặc định) => Chỉ lấy Checklist chưa kết thúc, currentTime: false => Lấy tất cả',
+    type: Boolean,
+    example: true,
+  })
+  async findAllChecklistByUserId(@Param('userId') userId: number,
+                                 @Query('currentPage') currentPage = 1,
+                                 @Query('currentTime') currentTime = true) {
+    const pageNumber = Number(currentPage);
+    return this.checklistsService.findAllChecklistByUserId(userId, pageNumber, currentTime);
   }
 
   @Get('/checklist/:id')

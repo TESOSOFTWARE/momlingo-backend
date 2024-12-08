@@ -9,6 +9,7 @@ import { Checklist } from './entities/checklist.entity';
 import { ChecklistItem } from './entities/checklist-item.entity';
 import { ChecklistDto } from './dtos/checklist.dto';
 import { ChecklistItemDto } from './dtos/checklist-item.dto';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class ChecklistsService {
@@ -34,14 +35,27 @@ export class ChecklistsService {
     return this.checklistRepository.findOneBy({ id });
   }
 
-  async findAllChecklist(): Promise<Checklist[]> {
-    return this.checklistRepository.find();
-  }
+  async findAllChecklistByUserId(userId: number, currentPage: number, currentTime: boolean) {
+    const limit = PAGINATION.LIMIT;
+    const skip = (currentPage - 1) * limit;
+    const query = this.checklistRepository.createQueryBuilder('checklist')
+      .where('checklist.userId = :userId', { userId })
+      .skip(skip)
+      .take(limit)
+      .orderBy('checklist.startDate', 'ASC');
 
-  async findAllChecklistByUserId(userId: number): Promise<Checklist[]> {
-    return this.checklistRepository.find(
-      { where: { userId: userId } },
-    );
+    if (currentTime) {
+      query.andWhere('CAST(checklist.endDate AS DATE) >= CAST(:currentDate AS DATE)', { currentDate: new Date() });
+    }
+
+    const [data, total] = await query.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOneChecklist(id: number): Promise<Checklist> {
