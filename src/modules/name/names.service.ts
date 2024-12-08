@@ -85,11 +85,18 @@ export class NamesService {
     if (lan) {
       query.andWhere('name.lan = :lan', { lan });
     }
+    const limit = PAGINATION.LIMIT;
+    const skip = (currentPage - 1) * limit;
+    query.skip(skip).take(limit);
 
-    const skip = (currentPage - 1) * PAGINATION.LIMIT;
-    query.skip(skip).take(PAGINATION.LIMIT);
+    const [data, total] = await query.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
 
-    // Thực thi truy vấn và trả về kết quả
-    return await query.getMany();
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 }
