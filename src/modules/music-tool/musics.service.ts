@@ -11,6 +11,7 @@ import { MusicCategoryDto } from './dtos/music-category.dto';
 import { MusicSongDto } from './dtos/music-song.dto';
 import { MusicCategoryType } from '../../enums/music-category-type.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class MusicsService {
@@ -20,7 +21,8 @@ export class MusicsService {
     @InjectRepository(MusicSong)
     private musicSongRepository: Repository<MusicSong>,
     private readonly fileUploadsService: FileUploadService,
-  ) {}
+  ) {
+  }
 
   /// --- Category service START ---
   async createCategory(categoryDto: MusicCategoryDto): Promise<MusicCategory> {
@@ -106,6 +108,7 @@ export class MusicsService {
       await queryRunner.release();
     }
   }
+
   /// --- Category service END ---
 
   /// --- Song service START ---
@@ -128,8 +131,19 @@ export class MusicsService {
     return this.musicSongRepository.findOneBy({ id });
   }
 
-  async findAllSong(): Promise<MusicSong[]> {
-    return this.musicSongRepository.find();
+  async findAllSong(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.musicSongRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async findOneSong(id: number): Promise<MusicSong> {
@@ -140,7 +154,7 @@ export class MusicsService {
     return song;
   }
 
-  async findAllSongByCategoryId(categoryId: number): Promise<MusicSong[]> {
+  async findAllSongByCategoryId(categoryId: number, currentPage: number) {
     const category = await this.musicCategoryRepository.findOne({
       where: { id: categoryId },
     });
@@ -148,31 +162,65 @@ export class MusicsService {
       throw new NotFoundException('Category not found');
     }
 
-    return this.musicSongRepository.find({
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.musicSongRepository.findAndCount({
       where: { category: { id: categoryId } },
       relations: ['category'],
+      skip: (currentPage - 1) * limit,
+      take: limit,
     });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
-  async findAllPopularSong(): Promise<MusicSong[]> {
-    return this.musicSongRepository.find({
+  async findAllPopularSong(currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.musicSongRepository.findAndCount({
       where: { category: { type: MusicCategoryType.POPULAR } },
       relations: ['category'],
+      skip: (currentPage - 1) * limit,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
-  async findSongByName(name: string): Promise<MusicSong[]> {
-    return this.musicSongRepository
+  async findSongByName(name: string, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const skip = (currentPage - 1) * limit;
+    const [data, total] = await this.musicSongRepository
       .createQueryBuilder('song')
       .where('LOWER(song.name) LIKE :name', {
         name: `%${name.toLowerCase()}%`,
       })
-      .getMany();
+      .skip(skip)
+      .take(currentPage)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
   }
 
   async removeSong(id: number): Promise<void> {
     const song = await this.findOneSong(id);
     await this.musicSongRepository.remove(song);
   }
+
   /// --- Song service END ---
 }

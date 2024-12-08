@@ -17,7 +17,7 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiOperation,
+  ApiOperation, ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -136,6 +136,7 @@ export class MusicsController {
   ): Promise<MusicCategory[]> {
     return this.musicsService.findCategoryByName(name);
   }
+
   /// --- Controller for Category - END ---
 
   /// --- Controller for Song - START ---
@@ -156,7 +157,7 @@ export class MusicsController {
       }
       return this.musicsService.createSong(songDto);
     } catch (e) {
-      if(file) {
+      if (file) {
         this.fileUploadsService.deleteFile(songDto.fileUrl);
       }
       throw e;
@@ -165,20 +166,48 @@ export class MusicsController {
 
   @Get('/song')
   @ApiOperation({ summary: 'Lấy danh sách tất cả Song' })
-  async findAllSong(): Promise<MusicSong[]> {
-    return this.musicsService.findAllSong();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllSong(
+    @Query('currentPage') currentPage = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.musicsService.findAllSong(pageNumber);
   }
 
   @Get('/song/popular')
   @ApiOperation({ summary: 'Lấy danh sách tất cả Song thịnh hành' })
-  async findAllPopularSong(): Promise<MusicSong[]> {
-    return this.musicsService.findAllPopularSong();
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllPopularSong(
+    @Query('currentPage') currentPage = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.musicsService.findAllPopularSong(pageNumber);
   }
 
   @Get('/song/category/:id')
   @ApiOperation({ summary: 'Lấy danh sách tất cả Song theo category' })
-  async findAllSongByCategoryId(@Param('id') id: number): Promise<MusicSong[]> {
-    return this.musicsService.findAllSongByCategoryId(id);
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllSongByCategoryId(@Param('id') id: number, @Query('currentPage') currentPage = 1) {
+    const pageNumber = Number(currentPage);
+    return this.musicsService.findAllSongByCategoryId(id, pageNumber);
   }
 
   @Get('/song/:id')
@@ -205,7 +234,7 @@ export class MusicsController {
         songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
       const songRes = await this.musicsService.updateSong(id, songDto);
-      if(file) {
+      if (file) {
         if (song.fileUrl) {
           this.fileUploadsService.deleteFile(song.fileUrl);
         }
@@ -234,8 +263,16 @@ export class MusicsController {
   @ApiOperation({
     summary: 'Tìm Song theo name',
   })
-  async searchSongNames(@Query('name') name: string): Promise<MusicSong[]> {
-    return this.musicsService.findSongByName(name);
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async searchSongNames(@Query('name') name: string, @Query('currentPage') currentPage = 1) {
+    const pageNumber = Number(currentPage);
+    return this.musicsService.findSongByName(name, pageNumber);
   }
 
   /// --- Controller for Song - END ---
