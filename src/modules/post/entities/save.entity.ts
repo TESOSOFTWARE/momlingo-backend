@@ -9,8 +9,8 @@ import {
 import { Post } from './post.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Entity('likes')
-export class Like {
+@Entity('saves')
+export class Save {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -23,11 +23,11 @@ export class Like {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Post, (post) => post.likes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Post, (post) => post.saves, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId' })
   post: Post;
 
-  @ManyToOne(() => User, (user) => user.likes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.saves, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 }

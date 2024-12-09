@@ -25,6 +25,7 @@ import { PostStatus } from '../../../enums/post-status.enum';
 import { Tag } from '../../tag/entities/tag.entity';
 import { PostImage } from './post-image.entity';
 import {Like} from "./like.entity";
+import {Save} from "./save.entity";
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -79,4 +80,7 @@ export class Post {
 
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
+
+  @OneToMany(() => Save, (save) => save.post)
+  saves: Save[];
 }

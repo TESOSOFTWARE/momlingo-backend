@@ -16,8 +16,9 @@ import { Language } from '../../../enums/language.enum';
 import { DeviceType } from '../../../enums/device-type.enum';
 import { Gender } from '../../../enums/gender.enum';
 import { Child } from '../../children/entities/child.entity';
-import {Like} from "../../post/entities/like.entity";
-import {Post} from "../../post/entities/post.entity";
+import { Like } from '../../post/entities/like.entity';
+import { Post } from '../../post/entities/post.entity';
+import { Save } from '../../post/entities/save.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -105,4 +106,7 @@ export class User {
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
+
+  @OneToMany(() => Save, (save) => save.user)
+  saves: Save[];
 }
