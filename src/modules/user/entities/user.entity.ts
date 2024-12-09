@@ -16,6 +16,8 @@ import { Language } from '../../../enums/language.enum';
 import { DeviceType } from '../../../enums/device-type.enum';
 import { Gender } from '../../../enums/gender.enum';
 import { Child } from '../../children/entities/child.entity';
+import {Like} from "../../post/entities/like.entity";
+import {Post} from "../../post/entities/post.entity";
 
 @Entity({ name: 'users' })
 export class User {
@@ -97,4 +99,10 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 }

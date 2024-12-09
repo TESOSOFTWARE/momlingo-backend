@@ -24,6 +24,7 @@ import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
 import { Tag } from '../../tag/entities/tag.entity';
 import { PostImage } from './post-image.entity';
+import {Like} from "./like.entity";
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -59,15 +60,15 @@ export class Post {
   @Column({ default: 0 })
   viewsCount: number;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'userId' })
-  user: User;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @ManyToMany(() => Tag, (tag) => tag.posts)
   @JoinTable({ name: 'post_tags' })
@@ -75,4 +76,7 @@ export class Post {
 
   @OneToMany(() => PostImage, (postImage) => postImage.post, { cascade: true })
   images: PostImage[];
+
+  @OneToMany(() => Like, (like) => like.post)
+  likes: Like[];
 }
