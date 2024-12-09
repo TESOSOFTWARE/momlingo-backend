@@ -24,8 +24,9 @@ import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
 import { Tag } from '../../tag/entities/tag.entity';
 import { PostImage } from './post-image.entity';
-import {Like} from "./like.entity";
-import {Save} from "./save.entity";
+import { Like } from './like.entity';
+import { Save } from './save.entity';
+import { PostComment } from './post-comment.entity';
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -83,4 +84,7 @@ export class Post {
 
   @OneToMany(() => Save, (save) => save.post)
   saves: Save[];
+
+  @OneToMany(() => PostComment, (comment) => comment.post)
+  comments: PostComment[];
 }

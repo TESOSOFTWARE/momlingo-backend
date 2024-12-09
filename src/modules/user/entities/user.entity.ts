@@ -19,6 +19,7 @@ import { Child } from '../../children/entities/child.entity';
 import { Like } from '../../post/entities/like.entity';
 import { Post } from '../../post/entities/post.entity';
 import { Save } from '../../post/entities/save.entity';
+import { PostComment } from '../../post/entities/post-comment.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -109,4 +110,7 @@ export class User {
 
   @OneToMany(() => Save, (save) => save.user)
   saves: Save[];
+
+  @OneToMany(() => PostComment, (comment) => comment.user)
+  comments: PostComment[];
 }
