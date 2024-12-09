@@ -7,7 +7,10 @@ import {
   OneToOne,
   Index,
   OneToMany,
-  JoinColumn, ManyToOne, ManyToMany, JoinTable,
+  JoinColumn,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
@@ -20,6 +23,7 @@ import { NewCategory } from '../../news/entities/new-category.entity';
 import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
 import { Tag } from '../../tag/entities/tag.entity';
+import { PostImage } from './post-image.entity';
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -43,16 +47,16 @@ export class Post {
   @Column({ default: true })
   enableComment: boolean;
 
-  @Column({default: 0})
+  @Column({ default: 0 })
   likesCount: number;
 
-  @Column({default: 0})
+  @Column({ default: 0 })
   commentsCount: number;
 
-  @Column({default: 0})
+  @Column({ default: 0 })
   savesCount: number;
 
-  @Column({default: 0})
+  @Column({ default: 0 })
   viewsCount: number;
 
   @ManyToOne(() => User)
@@ -68,4 +72,7 @@ export class Post {
   @ManyToMany(() => Tag, (tag) => tag.posts)
   @JoinTable({ name: 'post_tags' })
   tags: Tag[];
+
+  @OneToMany(() => PostImage, (postImage) => postImage.post, { cascade: true })
+  images: PostImage[];
 }
