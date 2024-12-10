@@ -1,8 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn, OneToMany,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { TaskGroupType } from '../../../enums/task-group-type.enum';
 
 import { ChecklistItem } from './checklist-item.entity';
@@ -34,6 +30,8 @@ export class Checklist {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   endDate: Date;
 
-  @OneToMany(() => ChecklistItem, (checklistItem) => checklistItem.checklist, { onDelete: 'CASCADE' })
+  @OneToMany(() => ChecklistItem, (checklistItem) => checklistItem.checklist, {
+    onDelete: 'CASCADE',
+  })
   checklistItems: ChecklistItem[];
 }
