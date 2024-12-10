@@ -22,11 +22,11 @@ import { Child } from '../../children/entities/child.entity';
 import { NewCategory } from '../../news/entities/new-category.entity';
 import { User } from '../../user/entities/user.entity';
 import { PostStatus } from '../../../enums/post-status.enum';
-import { Tag } from '../../tag/entities/tag.entity';
+import { Tag } from '../../post-tag/entities/tag.entity';
 import { PostImage } from './post-image.entity';
-import { Like } from './like.entity';
-import { Save } from './save.entity';
-import { PostComment } from './post-comment.entity';
+import { Like } from '../../post-like/entities/like.entity';
+import { Save } from '../../post-save/entities/save.entity';
+import { PostComment } from '../../post-comment/entities/post-comment.entity';
 
 @Entity({ name: 'posts' })
 export class Post {

@@ -5,14 +5,18 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Post } from './post.entity';
+import { Post } from '../../post/entities/post.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Entity('likes')
-export class Like {
+@Entity('post-comments')
+export class PostComment {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'text' })
+  content: string;
 
   @Column()
   postId: number;
@@ -23,11 +27,14 @@ export class Like {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Post, (post) => post.likes, { onDelete: 'CASCADE' })
+  @UpdateDateColumn()
+  updatedAt: string;
+
+  @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'postId' })
   post: Post;
 
-  @ManyToOne(() => User, (user) => user.likes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 }

@@ -42,6 +42,7 @@ dotenv.config();
     MusicsModule,
     NewsModule,
     ChecklistsModule,
+    TypeOrmModule,
   ],
   controllers: [],
   providers: [

@@ -16,10 +16,10 @@ import { Language } from '../../../enums/language.enum';
 import { DeviceType } from '../../../enums/device-type.enum';
 import { Gender } from '../../../enums/gender.enum';
 import { Child } from '../../children/entities/child.entity';
-import { Like } from '../../post/entities/like.entity';
+import { Like } from '../../post-like/entities/like.entity';
 import { Post } from '../../post/entities/post.entity';
-import { Save } from '../../post/entities/save.entity';
-import { PostComment } from '../../post/entities/post-comment.entity';
+import { Save } from '../../post-save/entities/save.entity';
+import { PostComment } from '../../post-comment/entities/post-comment.entity';
 
 @Entity({ name: 'users' })
 export class User {
