@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { EntityManager, Like, Repository } from 'typeorm';
 import { PAGINATION } from '../../constants/constants';
 import { Tag } from './entities/tag.entity';
 
@@ -12,8 +12,9 @@ export class TagsService {
   ) {
   }
 
-  async createTags(names: string[]): Promise<Tag[]> {
-    const existingTags = await this.tagRepository.find({
+  async createTags(names: string[], manager?: EntityManager): Promise<Tag[]> {
+    const repo = manager ? manager.getRepository(Tag) : this.tagRepository;
+    const existingTags = await repo.find({
       where: names.map(name => ({ name })),
     });
 
@@ -24,14 +25,15 @@ export class TagsService {
       tag.name = name;
       return tag;
     });
-    const createdTags = await this.tagRepository.save(newTags);
+    const createdTags = await repo.save(newTags);
 
     return [...existingTags, ...createdTags];
   }
 
-  async searchTags(query: string, currentPage: number = 1) {
+  async searchTags(query: string, currentPage: number = 1, manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(Tag) : this.tagRepository;
     const limit = PAGINATION.LIMIT;
-    const [data, total] = await this.tagRepository.findAndCount({
+    const [data, total] = await repo.findAndCount({
       where: { name: Like(`%${query}%`) },
       skip: (currentPage - 1) * limit,
       take: limit,

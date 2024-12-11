@@ -19,6 +19,8 @@ import { MusicsModule } from './modules/music-tool/musics.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { NewsModule } from './modules/news/news.module';
 import { ChecklistsModule } from './modules/checklist/checklists.module';
+import { TagsModule } from './modules/post-tag/tags.module';
+import { PostsModule } from './modules/post/posts.module';
 dotenv.config();
 
 @Module({
@@ -43,6 +45,8 @@ dotenv.config();
     NewsModule,
     ChecklistsModule,
     TypeOrmModule,
+    TagsModule,
+    PostsModule,
   ],
   controllers: [],
   providers: [
