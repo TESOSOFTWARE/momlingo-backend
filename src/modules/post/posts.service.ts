@@ -18,11 +18,12 @@ export class PostsService {
   ) {
   }
 
-  async create(createPostDto: CreatePostDto): Promise<Post> {
+  async create(createPostDto: CreatePostDto, userId: number): Promise<Post> {
     const { content, status, enableComment, tags, images } = createPostDto;
 
     const post = this.postRepository.create({
       content,
+      userId,
       status: status,
       enableComment
     });
@@ -44,6 +45,7 @@ export class PostsService {
   }
 
   async createPostImageAndTags(req: any, createPostDto: CreatePostDto, images?: Express.Multer.File[], manager?: EntityManager): Promise<Post> {
+    console.log("createPostImageAndTags", createPostDto);
     const postId = req.body.postId;
     const repo = manager ? manager.getRepository(PostImage) : this.postImageRepository;
 

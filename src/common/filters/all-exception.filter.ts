@@ -19,6 +19,9 @@ export class AllExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+
+    console.log("AllExceptionFilter catch");
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()

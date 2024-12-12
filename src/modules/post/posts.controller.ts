@@ -31,7 +31,12 @@ const postMulterOptions: MulterOptions = {
   storage: diskStorage({
     destination: async (req, file, cb) => {
       const postId = req.body.postId;
-      const uploadPath = `./uploads/posts/${postId}`;
+      console.log("postMulterOptions post id", req.body.postId);
+      console.log("postMulterOptions", req.body);
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      const uploadPath = `./uploads/posts/${currentYear}/${currentMonth}/${postId}`;
       try {
         await fs.ensureDir(uploadPath);
         cb(null, uploadPath);
@@ -55,8 +60,8 @@ const postMulterOptions: MulterOptions = {
   },
 };
 
-@ApiTags('Tags')
-@Controller('tags')
+@ApiTags('Posts')
+@Controller('posts')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 export class PostsController {
@@ -74,8 +79,8 @@ export class PostsController {
     description:
       'Tối đa 5 ảnh, mỗi ảnh k quá 5Mb',
   })
-  @UseInterceptors(CreatePostInterceptor)
   @UseInterceptors(
+    CreatePostInterceptor,
     FileFieldsInterceptor([
       { name: 'images', maxCount: 5 },
     ], postMulterOptions),
@@ -85,6 +90,7 @@ export class PostsController {
     @UploadedFiles() files: { images?: Express.Multer.File[] },
     @Req() req: any,
   ): Promise<MyPost> {
+    console.log("createPost");
     return await this.postsService.createPostImageAndTags(req, createPostDto, files.images);
   }
 }
