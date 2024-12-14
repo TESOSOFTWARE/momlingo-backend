@@ -8,6 +8,8 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { Tag } from '../post-tag/entities/tag.entity';
 import { PostStatus } from '../../enums/post-status.enum';
+import { NewCategory } from '../news/entities/new-category.entity';
+import { PAGINATION } from '../../constants/constants';
 
 @Injectable()
 export class PostsService {
@@ -88,4 +90,21 @@ export class PostsService {
     });
   }
 
- }
+  async findAllMyPost(req: any, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.postRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      where: { userId: req.user.id },
+      relations: ['images', 'tags'],
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
+}

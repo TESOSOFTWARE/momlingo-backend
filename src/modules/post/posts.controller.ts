@@ -24,6 +24,7 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs-extra';
 import { extname } from 'path';
 import { Post as MyPost } from './entities/post.entity';
+import { NewCategory } from '../news/entities/new-category.entity';
 
 const postMulterOptions: MulterOptions = {
   storage: diskStorage({
@@ -83,5 +84,22 @@ export class PostsController {
     @Req() req: any,
   ): Promise<MyPost> {
     return await this.postsService.createPost(req, createPostDto, files);
+  }
+
+  @Get('/me')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả post của mình' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllMyPost(
+    @Query('currentPage') currentPage = 1,
+    @Req() req: any,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.postsService.findAllMyPost(req, pageNumber);
   }
 }
