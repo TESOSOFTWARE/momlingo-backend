@@ -13,6 +13,7 @@ export class TagsService {
   }
 
   async createTags(names: string[], manager?: EntityManager): Promise<Tag[]> {
+    console.log('createTags');
     const repo = manager ? manager.getRepository(Tag) : this.tagRepository;
     const existingTags = await repo.find({
       where: names.map(name => ({ name })),

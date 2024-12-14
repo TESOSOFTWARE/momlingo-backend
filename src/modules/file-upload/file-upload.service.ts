@@ -3,6 +3,8 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { unlinkSync } from 'fs';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class FileUploadService {
@@ -14,6 +16,35 @@ export class FileUploadService {
       }
     } catch (error) {
       throw new NotFoundException(`File at ${fullPath} not found`);
+    }
+  }
+
+  async moveFile(tempFilePath: string, destFolderPath: string): Promise<void> {
+    // Ex: tempFilePath = '/uploads/temp/avatar-1732985081878-521758090.jpg';
+    // Ex: destFolderPath = '/uploads/child-avatars/';
+
+    if (typeof tempFilePath !== 'string' || !tempFilePath) {
+      console.error('Đường dẫn tệp tạm không hợp lệ:', tempFilePath);
+      return;
+    }
+
+    console.log('path', path);
+    // Lấy tên tệp từ đường dẫn gốc (giữ nguyên tên)
+    const fileName = path.basename(tempFilePath);  // Lấy tên tệp từ đường dẫn tạm (ví dụ: 'avatar-1732985081878-521758090.jpg')
+
+    // Tạo đường dẫn đích mới (thư mục đích + tên tệp giữ nguyên)
+    const destFilePath = path.join(destFolderPath, fileName);
+
+    try {
+      // Kiểm tra và tạo thư mục đích nếu chưa tồn tại
+      await fs.mkdir(destFolderPath, { recursive: true });
+
+      // Di chuyển tệp từ tempFilePath đến destFilePath
+      await fs.rename(tempFilePath, destFilePath);
+
+      console.log(`Tệp đã được di chuyển từ ${tempFilePath} đến ${destFilePath}`);
+    } catch (error) {
+      console.error('Lỗi khi di chuyển tệp:', error);
     }
   }
 }

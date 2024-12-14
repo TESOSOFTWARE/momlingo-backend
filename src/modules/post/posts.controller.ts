@@ -16,36 +16,33 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { PostsService } from './posts.service';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { diskStorage } from 'multer';
 import * as fs from 'fs-extra';
 import { extname } from 'path';
-import * as path from 'path';
-import { CreatePostInterceptor } from './interceptors/create-post.interceptor';
-import { Post as MyPost} from './entities/post.entity';
+import { Post as MyPost } from './entities/post.entity';
 
 const postMulterOptions: MulterOptions = {
   storage: diskStorage({
     destination: async (req, file, cb) => {
-      const postId = req.body.postId;
-      console.log("postMulterOptions post id", req.body.postId);
-      console.log("postMulterOptions", req.body);
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth() + 1;
-      const uploadPath = `./uploads/posts/${currentYear}/${currentMonth}/${postId}`;
+      const uploadPathTemp = `./uploads/posts/${currentYear}/${currentMonth}/temps`;
+      console.log('uploadPathTemp', uploadPathTemp);
       try {
-        await fs.ensureDir(uploadPath);
-        cb(null, uploadPath);
+        await fs.ensureDir(uploadPathTemp);
+        cb(null, uploadPathTemp);
       } catch (error) {
         cb(error, null);
       }
     },
     filename: (req, file, cb) => {
       const fileName = `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+      console.log('fileName', fileName);
       cb(null, fileName);
     },
   }),
@@ -79,18 +76,12 @@ export class PostsController {
     description:
       'Tối đa 5 ảnh, mỗi ảnh k quá 5Mb',
   })
-  @UseInterceptors(
-    CreatePostInterceptor,
-    FileFieldsInterceptor([
-      { name: 'images', maxCount: 5 },
-    ], postMulterOptions),
-  )
+  @UseInterceptors(FilesInterceptor('images', 5, postMulterOptions))
   async createPost(
     @Body() createPostDto: CreatePostDto,
-    @UploadedFiles() files: { images?: Express.Multer.File[] },
+    @UploadedFiles() files: Express.Multer.File[],
     @Req() req: any,
   ): Promise<MyPost> {
-    console.log("createPost");
-    return await this.postsService.createPostImageAndTags(req, createPostDto, files.images);
+    return await this.postsService.createPost(req, createPostDto, files);
   }
 }
