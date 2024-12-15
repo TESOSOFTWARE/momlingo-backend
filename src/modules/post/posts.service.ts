@@ -107,4 +107,40 @@ export class PostsService {
     };
   }
 
+  async updateLikesCount(post: Post, action: 'increase' | 'decrease', manager?: EntityManager): Promise<Post> {
+    const repo = manager ? manager.getRepository(Post) : this.postRepository;
+    if (action === 'increase') {
+      post.likesCount += 1;
+    } else if (action === 'decrease' && post.likesCount > 0) {
+      post.likesCount -= 1;
+    }
+    return await repo.save(post);
+  }
+
+  async updateCommentsCount(post: Post, action: 'increase' | 'decrease', manager?: EntityManager): Promise<Post> {
+    const repo = manager ? manager.getRepository(Post) : this.postRepository;
+    if (action === 'increase') {
+      post.commentsCount += 1;
+    } else if (action === 'decrease' && post.commentsCount > 0) {
+      post.commentsCount -= 1;
+    }
+    return await repo.save(post);
+  }
+
+  async updateSavesCount(post: Post, action: 'increase' | 'decrease', manager?: EntityManager): Promise<Post> {
+    const repo = manager ? manager.getRepository(Post) : this.postRepository;
+    if (action === 'increase') {
+      post.savesCount += 1;
+    } else if (action === 'decrease' && post.savesCount > 0) {
+      post.savesCount -= 1;
+    }
+    return await repo.save(post);
+  }
+
+  async increaseViewsCount(id: number, manager?: EntityManager): Promise<Post> {
+    const repo = manager ? manager.getRepository(Post) : this.postRepository;
+    const post = await this.findOneById(id, manager);
+    post.viewsCount += 1;
+    return await repo.save(post);
+  }
 }
