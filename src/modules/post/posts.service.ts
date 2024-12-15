@@ -96,7 +96,7 @@ export class PostsService {
       skip: (currentPage - 1) * limit,
       take: limit,
       where: { userId: req.user.id },
-      relations: ['images', 'tags'],
+      relations: ['images', 'tags', 'user'],
     });
     const totalPages = Math.ceil(total / limit);
     return {
