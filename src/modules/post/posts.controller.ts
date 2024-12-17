@@ -51,9 +51,10 @@ const postMulterOptions: MulterOptions = {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+    // Due mobile is logging file.mimetype application/octet-stream
+    /*if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
       return cb(new Error('Only image files are allowed!'), false);
-    }
+    }*/
     cb(null, true);
   },
 };
