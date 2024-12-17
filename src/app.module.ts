@@ -23,6 +23,7 @@ import { TagsModule } from './modules/post-tag/tags.module';
 import { PostsModule } from './modules/post/posts.module';
 import { CommentsModule } from './modules/post-comment/comments.module';
 import { LikesModule } from './modules/post-like/likes.module';
+import { SavesModule } from './modules/post-save/saves.module';
 dotenv.config();
 
 @Module({
@@ -51,6 +52,7 @@ dotenv.config();
     PostsModule,
     CommentsModule,
     LikesModule,
+    SavesModule,
   ],
   controllers: [],
   providers: [

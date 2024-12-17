@@ -38,7 +38,7 @@ export class CommentsController {
     return this.commentsService.deleteCommentsById(id, req);
   }
 
-  @Get('/posts/:postId')
+  @Get('/all/:postId')
   @ApiOperation({ summary: 'Get comment theo post id' })
   @ApiQuery({
     name: 'currentPage',

@@ -13,19 +13,19 @@ import {
   ApiOperation, ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { LikesService } from './likes.service';
+import { SavesService } from './saves.service';
 
-@ApiTags('Post Like')
-@Controller('post-likes')
+@ApiTags('Post Save')
+@Controller('post-saves')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-export class LikesController {
-  constructor(private readonly likesService: LikesService) {
+export class SavesController {
+  constructor(private readonly savesService: SavesService) {
   }
 
-  @Post('/like')
+  @Post('/save')
   @ApiBody({
-    description: 'Post ID to like',
+    description: 'Post ID to save',
     schema: {
       type: 'object',
       properties: {
@@ -34,15 +34,15 @@ export class LikesController {
       required: ['postId'],
     },
   })
-  @ApiOperation({ summary: 'Like post' })
-  async likePost(@Body() body: { postId: number }, @Req() req: any) {
+  @ApiOperation({ summary: 'Save post' })
+  async savePost(@Body() body: { postId: number }, @Req() req: any) {
     const { postId } = body;
-    return this.likesService.likePost(postId, req);
+    return this.savesService.savePost(postId, req);
   }
 
-  @Post('/unLike')
+  @Post('/unSave')
   @ApiBody({
-    description: 'Post ID to like',
+    description: 'Post ID to save',
     schema: {
       type: 'object',
       properties: {
@@ -51,14 +51,14 @@ export class LikesController {
       required: ['postId'],
     },
   })
-  @ApiOperation({ summary: 'UnLike post' })
-  async unlikePost(@Body() body: { postId: number }, @Req() req: any) {
+  @ApiOperation({ summary: 'UnSave post' })
+  async unSavePost(@Body() body: { postId: number }, @Req() req: any) {
     const { postId } = body;
-    return this.likesService.unlikePost(postId, req);
+    return this.savesService.unSavePost(postId, req);
   }
 
   @Get('/all/:postId')
-  @ApiOperation({ summary: 'Get likes theo post id' })
+  @ApiOperation({ summary: 'Get saves theo post id' })
   @ApiQuery({
     name: 'currentPage',
     required: false,
@@ -70,6 +70,6 @@ export class LikesController {
     @Param('postId') postId: number,
     @Query('currentPage') currentPage = 1, @Req() req: any) {
     const pageNumber = Number(currentPage);
-    return this.likesService.getAllLikeByPostId(postId, pageNumber, req);
+    return this.savesService.getAllSaveByPostId(postId, pageNumber, req);
   }
 }
