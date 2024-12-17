@@ -32,6 +32,18 @@ export class PostsService {
     return post;
   }
 
+  async getPostDetail(id: number): Promise<Post | null> {
+    const post = await this.postRepository.findOne({
+      where: { id },
+      relations: ['images', 'tags', 'user'],
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
+  }
+
   async createPost(req: any, createPostDto: CreatePostDto, files?: Express.Multer.File[]): Promise<Post> {
     return this.postRepository.manager.transaction(async (manager: EntityManager) => {
       try {

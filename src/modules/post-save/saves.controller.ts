@@ -66,7 +66,7 @@ export class SavesController {
     type: Number,
     example: 1,
   })
-  async getAllCommentByPostId(
+  async getAllSaveByPostId(
     @Param('postId') postId: number,
     @Query('currentPage') currentPage = 1, @Req() req: any) {
     const pageNumber = Number(currentPage);

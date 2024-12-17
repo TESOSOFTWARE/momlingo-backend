@@ -24,7 +24,6 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs-extra';
 import { extname } from 'path';
 import { Post as MyPost } from './entities/post.entity';
-import { NewCategory } from '../news/entities/new-category.entity';
 
 const postMulterOptions: MulterOptions = {
   storage: diskStorage({
@@ -65,6 +64,12 @@ const postMulterOptions: MulterOptions = {
 @UseGuards(JwtGuard)
 export class PostsController {
   constructor(private readonly postsService: PostsService) {
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Lấy post detail theo id' })
+  async findOne(@Param('id') id: number): Promise<MyPost> {
+    return this.postsService.getPostDetail(id);
   }
 
   @Post()
