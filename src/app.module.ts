@@ -22,6 +22,7 @@ import { ChecklistsModule } from './modules/checklist/checklists.module';
 import { TagsModule } from './modules/post-tag/tags.module';
 import { PostsModule } from './modules/post/posts.module';
 import { CommentsModule } from './modules/post-comment/comments.module';
+import { LikesModule } from './modules/post-like/likes.module';
 dotenv.config();
 
 @Module({
@@ -49,6 +50,7 @@ dotenv.config();
     TagsModule,
     PostsModule,
     CommentsModule,
+    LikesModule,
   ],
   controllers: [],
   providers: [
