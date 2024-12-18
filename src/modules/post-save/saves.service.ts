@@ -74,6 +74,6 @@ export class SavesService {
       where: { postId, userId },
     });
 
-    return save !== undefined;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
+    return save !== null;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
   }
 }

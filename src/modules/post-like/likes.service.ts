@@ -75,6 +75,6 @@ export class LikesService {
       where: { postId, userId },
     });
 
-    return like !== undefined;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
+    return like !== null;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
   }
 }
