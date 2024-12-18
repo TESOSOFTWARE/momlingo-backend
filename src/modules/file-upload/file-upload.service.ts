@@ -5,10 +5,31 @@ import { unlinkSync } from 'fs';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { URL } from 'url';
 
 @Injectable()
 export class FileUploadService {
+  getFolderPathFromUrl(url: string): string {
+    // Loại bỏ phần domain của URL (http://api.momlingo.com)
+    const urlPath = new URL(url).pathname;
+    // Cắt bỏ phần tên tệp, chỉ giữ lại phần thư mục
+    return path.dirname(urlPath);  // path.dirname sẽ trả về phần thư mục
+  }
+
+  async deleteFolder(folderPath: string): Promise<void> {
+    // Ex: folderPath: /uploads/child-avatars/
+    try {
+      // Xoá thư mục và các tệp con bên trong
+      await fs.rm(folderPath, { recursive: true, force: true });
+      console.log(`Thư mục ${folderPath} đã được xoá thành công.`);
+    } catch (error) {
+      console.error('Lỗi khi xoá thư mục:', error);
+      throw error;
+    }
+  }
+
   deleteFile(fullPath: string): void {
+    // http://api.momlingo.com/uploads/child-avatars/avatar-1730351274104-943799663.png
     try {
       const uploadsIndex = fullPath.indexOf('uploads');
       if (uploadsIndex !== -1) {

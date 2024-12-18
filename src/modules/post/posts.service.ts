@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
@@ -98,6 +98,26 @@ export class PostsService {
           await this.fileUploadService.deleteFile(files[i].path);
         }
         throw e;
+      }
+    });
+  }
+
+  async deletePost(postId: number, req: any, inputManager?: EntityManager) {
+    return this.postRepository.manager.transaction(async (entityManager: EntityManager) => {
+      const manager = inputManager ? inputManager : entityManager;
+      const userId = req.user.id;
+      const repo = manager.getRepository(Post);
+      const post = await repo.findOne({
+        where: { id: postId },
+        relations: ['images'],
+      });
+      if (userId != post.userId) {
+        throw new NotAcceptableException('You do not have permission to delete post');
+      }
+      await repo.remove(post);
+      if (post.images.length > 0) {
+        const postFolder = this.fileUploadService.getFolderPathFromUrl(post.images[0].imageUrl);
+        await this.fileUploadService.deleteFolder(postFolder);
       }
     });
   }

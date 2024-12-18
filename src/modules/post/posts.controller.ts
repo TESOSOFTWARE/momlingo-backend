@@ -92,7 +92,7 @@ export class PostsController {
     return await this.postsService.createPost(req, createPostDto, files);
   }
 
-  @Get('/me')
+  @Get('/all/me')
   @ApiOperation({ summary: 'Lấy danh sách tất cả post của mình' })
   @ApiQuery({
     name: 'currentPage',
@@ -107,5 +107,11 @@ export class PostsController {
   ) {
     const pageNumber = Number(currentPage);
     return this.postsService.findAllMyPost(req, pageNumber);
+  }
+
+  @Delete('/:id')
+  @ApiOperation({ summary: 'Xoá post' })
+  async delete(@Param('id') id: number, @Req() req: any) {
+    return this.postsService.deletePost(id, req);
   }
 }
