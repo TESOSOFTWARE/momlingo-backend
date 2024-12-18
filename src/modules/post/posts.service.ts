@@ -1,4 +1,4 @@
-import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
@@ -8,8 +8,9 @@ import { CreatePostDto } from './dtos/create-post.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { Tag } from '../post-tag/entities/tag.entity';
 import { PostStatus } from '../../enums/post-status.enum';
-import { NewCategory } from '../news/entities/new-category.entity';
 import { PAGINATION } from '../../constants/constants';
+import { LikesService } from '../post-like/likes.service';
+import { SavesService } from '../post-save/saves.service';
 
 @Injectable()
 export class PostsService {
@@ -19,6 +20,10 @@ export class PostsService {
     @InjectRepository(PostImage)
     readonly postImageRepository: Repository<PostImage>,
     readonly tagsService: TagsService,
+    @Inject(forwardRef(() => LikesService))
+    private readonly likesService: LikesService,
+    @Inject(forwardRef(() => SavesService))
+    private readonly savesService: SavesService,
     private readonly fileUploadService: FileUploadService,
   ) {
   }
@@ -32,7 +37,7 @@ export class PostsService {
     return post;
   }
 
-  async getPostDetail(id: number): Promise<Post | null> {
+  async getPostDetail(id: number, req: any) {
     const post = await this.postRepository.findOne({
       where: { id },
       relations: ['images', 'tags', 'user'],
@@ -41,7 +46,14 @@ export class PostsService {
     if (!post) {
       throw new NotFoundException('Post not found');
     }
-    return post;
+    const liked = await this.likesService.hasUserLikedPost(id, req.user.id);
+    const saved = await this.likesService.hasUserLikedPost(id, req.user.id);
+
+    return {
+      ...post,
+      liked,
+      saved,
+    };
   }
 
   async createPost(req: any, createPostDto: CreatePostDto, files?: Express.Multer.File[]): Promise<Post> {
@@ -129,10 +141,103 @@ export class PostsService {
       take: limit,
       where: { userId: req.user.id },
       relations: ['images', 'tags', 'user'],
+      order: {
+        createdAt: 'DESC',  // Sắp xếp theo ngày tạo từ gần nhất đến lâu nhất
+      },
     });
     const totalPages = Math.ceil(total / limit);
+    // Kiểm tra liked và saved cho từng bài viết
+    const postsWithAdditionalInfo = await Promise.all(
+      data.map(async (post) => {
+        // Kiểm tra liked và saved cho mỗi bài viết
+        const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+        const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+
+        // Thêm thông tin liked và saved vào bài viết
+        return {
+          ...post,
+          liked,
+          saved,
+        };
+      }),
+    );
+
+    // Trả về kết quả với thông tin bổ sung
     return {
-      data,
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
+  async findAllPostOfGuest(userId: number, req: any, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.postRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      where: { userId: userId, status: PostStatus.PUBLIC },
+      relations: ['images', 'tags', 'user'],
+      order: {
+        createdAt: 'DESC',  // Sắp xếp theo ngày tạo từ gần nhất đến lâu nhất
+      },
+    });
+    const totalPages = Math.ceil(total / limit);
+    // Kiểm tra liked và saved cho từng bài viết
+    const postsWithAdditionalInfo = await Promise.all(
+      data.map(async (post) => {
+        // Kiểm tra liked và saved cho mỗi bài viết
+        const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+        const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+
+        // Thêm thông tin liked và saved vào bài viết
+        return {
+          ...post,
+          liked,
+          saved,
+        };
+      }),
+    );
+
+    // Trả về kết quả với thông tin bổ sung
+    return {
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
+  async findAllPostOnNewFeed(req: any, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [data, total] = await this.postRepository.findAndCount({
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      relations: ['images', 'tags', 'user'],
+      order: {
+        createdAt: 'DESC',  // Sắp xếp theo ngày tạo từ gần nhất đến lâu nhất
+      },
+    });
+    const totalPages = Math.ceil(total / limit);
+    // Kiểm tra liked và saved cho từng bài viết
+    const postsWithAdditionalInfo = await Promise.all(
+      data.map(async (post) => {
+        // Kiểm tra liked và saved cho mỗi bài viết
+        const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+        const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+
+        // Thêm thông tin liked và saved vào bài viết
+        return {
+          ...post,
+          liked,
+          saved,
+        };
+      }),
+    );
+
+    // Trả về kết quả với thông tin bổ sung
+    return {
+      data: postsWithAdditionalInfo,
       total,
       totalPages,
       currentPage,

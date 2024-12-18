@@ -1,16 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { PAGINATION } from '../../constants/constants';
 import { PostsService } from '../post/posts.service';
 import { Like as PostLike } from './entities/like.entity' ;
 import { PostComment } from '../post-comment/entities/post-comment.entity';
+import { ChildrenService } from '../children/children.service';
 
 @Injectable()
 export class LikesService {
   constructor(
     @InjectRepository(PostLike)
     private likeRepository: Repository<PostLike>,
+    @Inject(forwardRef(() => PostsService))
     private postsService: PostsService,
   ) {
   }
@@ -65,5 +67,14 @@ export class LikesService {
       totalPages,
       currentPage,
     };
+  }
+
+  async hasUserLikedPost(postId: number, userId: number): Promise<boolean> {
+    // Kiểm tra trong bảng Likes xem có bản ghi nào khớp với postId và userId không
+    const like = await this.likeRepository.findOne({
+      where: { postId, userId },
+    });
+
+    return like !== undefined;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
   }
 }

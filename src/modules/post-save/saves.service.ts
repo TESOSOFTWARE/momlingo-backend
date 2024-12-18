@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { PAGINATION } from '../../constants/constants';
@@ -11,6 +11,7 @@ export class SavesService {
   constructor(
     @InjectRepository(Save)
     private saveRepository: Repository<Save>,
+    @Inject(forwardRef(() => PostsService))
     private postsService: PostsService,
   ) {
   }
@@ -65,5 +66,14 @@ export class SavesService {
       totalPages,
       currentPage,
     };
+  }
+
+  async hasUserSavedPost(postId: number, userId: number): Promise<boolean> {
+    // Kiểm tra trong bảng saves xem có bản ghi nào khớp với postId và userId không
+    const save = await this.saveRepository.findOne({
+      where: { postId, userId },
+    });
+
+    return save !== undefined;  // Nếu tìm thấy bản ghi, trả về true, ngược lại false
   }
 }

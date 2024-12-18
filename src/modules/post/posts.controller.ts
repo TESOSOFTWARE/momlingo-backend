@@ -68,8 +68,8 @@ export class PostsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy post detail theo id' })
-  async findOne(@Param('id') id: number): Promise<MyPost> {
-    return this.postsService.getPostDetail(id);
+  async findOne(@Param('id') id: number, @Req() req: any) {
+    return this.postsService.getPostDetail(id, req);
   }
 
   @Post()
@@ -107,6 +107,41 @@ export class PostsController {
   ) {
     const pageNumber = Number(currentPage);
     return this.postsService.findAllMyPost(req, pageNumber);
+  }
+
+  @Get('/all/guest/:userId')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả post public của user khách' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllPostOfGuest(
+    @Param('userId') userId: number,
+    @Query('currentPage') currentPage = 1,
+    @Req() req: any,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.postsService.findAllPostOfGuest(userId, req, pageNumber);
+  }
+
+  @Get('/all/new-feed')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả post của mọi người' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllPostOnNewFeed(
+    @Query('currentPage') currentPage = 1,
+    @Req() req: any,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.postsService.findAllPostOnNewFeed(req, pageNumber);
   }
 
   @Delete('/:id')
