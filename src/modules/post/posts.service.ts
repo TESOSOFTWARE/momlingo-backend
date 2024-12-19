@@ -47,7 +47,7 @@ export class PostsService {
       throw new NotFoundException('Post not found');
     }
     const liked = await this.likesService.hasUserLikedPost(id, req.user.id);
-    const saved = await this.likesService.hasUserLikedPost(id, req.user.id);
+    const saved = await this.savesService.hasUserSavedPost(id, req.user.id);
 
     return {
       ...post,
@@ -163,6 +163,40 @@ export class PostsService {
     );
 
     // Trả về kết quả với thông tin bổ sung
+    return {
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
+  async findAllMyPostSaved(req: any, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [savedPosts, total] = await this.savesService.saveRepository.findAndCount({
+      where: { userId: req.user.id },
+      relations: ['post'], // Lấy các bài viết đã lưu
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      order: {
+        createdAt: 'DESC',  // Sắp xếp theo ngày lưu của bài viết
+      },
+    });
+    const posts = savedPosts.map(save => save.post);
+    const totalPages = Math.ceil(total / limit);
+
+    const postsWithAdditionalInfo = await Promise.all(
+        posts.map(async (post) => {
+          const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+          const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+          return {
+            ...post,
+            liked,
+            saved,
+          };
+        }),
+    );
+
     return {
       data: postsWithAdditionalInfo,
       total,

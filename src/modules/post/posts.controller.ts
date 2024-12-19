@@ -109,6 +109,23 @@ export class PostsController {
     return this.postsService.findAllMyPost(req, pageNumber);
   }
 
+  @Get('/all/me/saved')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả post mà đã lưu' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async findAllMyPostSaved(
+      @Query('currentPage') currentPage = 1,
+      @Req() req: any,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.postsService.findAllMyPostSaved(req, pageNumber);
+  }
+
   @Get('/all/guest/:userId')
   @ApiOperation({ summary: 'Lấy danh sách tất cả post public của user khách' })
   @ApiQuery({

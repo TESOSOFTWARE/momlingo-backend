@@ -10,7 +10,7 @@ import { PostComment } from '../post-comment/entities/post-comment.entity';
 export class SavesService {
   constructor(
     @InjectRepository(Save)
-    private saveRepository: Repository<Save>,
+    public saveRepository: Repository<Save>,
     @Inject(forwardRef(() => PostsService))
     private postsService: PostsService,
   ) {
