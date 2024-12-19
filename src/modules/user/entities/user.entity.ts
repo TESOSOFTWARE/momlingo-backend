@@ -22,6 +22,7 @@ import { Like } from '../../post-like/entities/like.entity';
 import { Post } from '../../post/entities/post.entity';
 import { Save } from '../../post-save/entities/save.entity';
 import { PostComment } from '../../post-comment/entities/post-comment.entity';
+import { Notification as MyNotification } from '../../notification/entities/notification.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -126,4 +127,16 @@ export class User {
 
   @ManyToMany(() => User, (user) => user.followers, { cascade: true })
   followed: User[]; // Những người mà người dùng này đang theo dõi
+
+  @OneToMany(
+    () => MyNotification,
+    (notification: MyNotification) => notification.user,
+  )
+  notifications: MyNotification[];
+
+  @OneToMany(
+    () => MyNotification,
+    (notification: MyNotification) => notification.actor,
+  )
+  actorNotifications: MyNotification[];
 }

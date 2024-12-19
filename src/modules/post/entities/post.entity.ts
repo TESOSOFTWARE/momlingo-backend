@@ -18,6 +18,7 @@ import { PostImage } from './post-image.entity';
 import { Like } from '../../post-like/entities/like.entity';
 import { Save } from '../../post-save/entities/save.entity';
 import { PostComment } from '../../post-comment/entities/post-comment.entity';
+import { Notification as MyNotification } from '../../notification/entities/notification.entity';
 
 @Entity({ name: 'posts' })
 export class Post {
@@ -78,4 +79,10 @@ export class Post {
 
   @OneToMany(() => PostComment, (comment) => comment.post)
   comments: PostComment[];
+
+  @OneToMany(
+    () => MyNotification,
+    (notification: MyNotification) => notification.post,
+  )
+  notifications: MyNotification[];
 }
