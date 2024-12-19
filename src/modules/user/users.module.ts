@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { FileUploadModule } from '../file-upload/file-upload.module';
 import { ChildrenModule } from '../children/children.module';
 import { FollowsModule } from '../follow/follows.module';
+import { PostsModule } from '../post/posts.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { FollowsModule } from '../follow/follows.module';
     forwardRef(() => ChildrenModule),
     forwardRef(() => FollowsModule),
     FileUploadModule,
+    PostsModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],

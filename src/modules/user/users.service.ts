@@ -16,6 +16,7 @@ import { ChildrenService } from '../children/children.service';
 import { Child } from '../children/entities/child.entity';
 import { PAGINATION } from '../../constants/constants';
 import { FollowsService } from '../follow/follows.service';
+import { PostsService } from '../post/posts.service';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +28,7 @@ export class UsersService {
     private readonly childrenService: ChildrenService,
     @Inject(forwardRef(() => FollowsService))
     private readonly followsService: FollowsService,
+    private readonly postsService: PostsService,
   ) {}
 
   findAll(): Promise<User[]> {
@@ -79,9 +81,18 @@ export class UsersService {
       req.user.id,
       id,
     );
+    const followersCount = await this.followsService.getFollowersCount(id);
+    const followedCount = await this.followsService.getFollowedUsersCount(id);
+    const postsCount = await this.postsService.postRepository.count({
+      where: { userId: id },
+    });
+
     return {
       ...user,
       isFollowing,
+      followersCount,
+      followedCount,
+      postsCount,
     };
   }
 
@@ -144,9 +155,7 @@ export class UsersService {
     return manager ? this.findOneById(id, manager) : this.findOneById(id);
   }
 
-  async findUserWithPartnerAndChildrenById(
-    id: number,
-  ): Promise<UserWithChildren> {
+  async findUserWithPartnerAndChildrenById(id: number) {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['partner', 'childrenAsMother', 'childrenAsFather'],
@@ -158,10 +167,20 @@ export class UsersService {
       user.gender === Gender.FEMALE
         ? user.childrenAsMother
         : user.childrenAsFather;
+
+    const followersCount = await this.followsService.getFollowersCount(id);
+    const followedCount = await this.followsService.getFollowedUsersCount(id);
+    const postsCount = await this.postsService.postRepository.count({
+      where: { userId: id },
+    });
+
     return {
       ...user,
       children,
-    } as UserWithChildren;
+      followersCount,
+      followedCount,
+      postsCount,
+    };
   }
 
   async findUserWithPartnerAndChildrenByEmail(

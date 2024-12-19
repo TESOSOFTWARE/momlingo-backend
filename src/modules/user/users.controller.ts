@@ -67,7 +67,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Lấy thông full thông tin user và children dựa vào user id',
   })
-  async getProfile(@Param('id') id: number): Promise<UserWithChildren> {
+  async getProfile(@Param('id') id: number) {
     return this.usersService.findUserWithPartnerAndChildrenById(id);
   }
 
@@ -75,7 +75,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Lấy thông full thông tin user và children dựa vào access token',
   })
-  async getMyProfile(@Req() req): Promise<UserWithChildren> {
+  async getMyProfile(@Req() req) {
     return this.usersService.findUserWithPartnerAndChildrenById(req.user.id);
   }
 

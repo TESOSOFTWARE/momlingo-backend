@@ -16,7 +16,7 @@ import { SavesService } from '../post-save/saves.service';
 export class PostsService {
   constructor(
     @InjectRepository(Post)
-    private postRepository: Repository<Post>,
+    public postRepository: Repository<Post>,
     @InjectRepository(PostImage)
     readonly postImageRepository: Repository<PostImage>,
     readonly tagsService: TagsService,

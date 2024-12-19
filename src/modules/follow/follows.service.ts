@@ -107,4 +107,22 @@ export class FollowsService {
       currentPage: currentPage,
     };
   }
+
+  async getFollowersCount(userId: number): Promise<any> {
+    const followersCount = await this.followRepository
+      .createQueryBuilder('follow')
+      .where('follow.followedId = :userId', { userId })
+      .getCount();
+
+    return followersCount; // Trả về tổng số người đang theo dõi userId
+  }
+
+  async getFollowedUsersCount(userId: number): Promise<any> {
+    const followedCount = await this.followRepository
+      .createQueryBuilder('follow')
+      .where('follow.followerId = :userId', { userId })
+      .getCount();
+
+    return followedCount; // Trả về tổng số người mà userId đang theo dõi
+  }
 }
