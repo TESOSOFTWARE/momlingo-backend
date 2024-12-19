@@ -161,6 +161,31 @@ export class PostsController {
     return this.postsService.findAllPostOnNewFeed(req, pageNumber);
   }
 
+  @Get('/search/new-feed')
+  @ApiOperation({ summary: 'Tìm kiếm posts trên new-feed theo nội dung, tags' })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'text',
+    required: true,
+    description: 'Từ khoá tìm kiếm',
+    type: String,
+    example: '',
+  })
+  async searchAllPostOnNewFeed(
+      @Query('text') text = '',
+      @Query('currentPage') currentPage = 1,
+      @Req() req: any,
+  ) {
+    const pageNumber = Number(currentPage);
+    return this.postsService.searchAllPostOnNewFeed(req, text, pageNumber);
+  }
+
   @Delete('/:id')
   @ApiOperation({ summary: 'Xoá post' })
   async delete(@Param('id') id: number, @Req() req: any) {

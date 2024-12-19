@@ -278,6 +278,43 @@ export class PostsService {
     };
   }
 
+  async searchAllPostOnNewFeed(req: any, text: string, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const searchText = `%${text}%`;
+
+    const queryBuilder = this.postRepository.createQueryBuilder('post')
+        .leftJoinAndSelect('post.tags', 'tag') // JOIN với bảng tags
+        .leftJoinAndSelect('post.images', 'image')
+        .leftJoinAndSelect('post.user', 'user')
+        .where('post.content LIKE :searchText', { searchText }) // Tìm trong content
+        .orWhere('tag.name LIKE :searchText', { searchText }) // Tìm trong name của tag
+        .skip((currentPage - 1) * limit)
+        .take(limit)
+        .orderBy('post.createdAt', 'DESC');
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    const postsWithAdditionalInfo = await Promise.all(
+        data.map(async (post) => {
+          const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+          const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+          return {
+            ...post,
+            liked,
+            saved,
+          };
+        }),
+    );
+
+    return {
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
   async updateLikesCount(post: Post, action: 'increase' | 'decrease', manager?: EntityManager): Promise<Post> {
     const repo = manager ? manager.getRepository(Post) : this.postRepository;
     if (action === 'increase') {
