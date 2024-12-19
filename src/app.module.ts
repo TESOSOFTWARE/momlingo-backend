@@ -24,6 +24,7 @@ import { PostsModule } from './modules/post/posts.module';
 import { CommentsModule } from './modules/post-comment/comments.module';
 import { LikesModule } from './modules/post-like/likes.module';
 import { SavesModule } from './modules/post-save/saves.module';
+import { FollowsModule } from './modules/follow/follows.module';
 dotenv.config();
 
 @Module({
@@ -53,6 +54,7 @@ dotenv.config();
     CommentsModule,
     LikesModule,
     SavesModule,
+    FollowsModule,
   ],
   controllers: [],
   providers: [

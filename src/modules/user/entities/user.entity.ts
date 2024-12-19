@@ -8,6 +8,8 @@ import {
   Index,
   OneToMany,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { UserRole } from '../../../enums/user-role.enum';
 import { LoginType } from '../../../enums/login-type.enum';
@@ -113,4 +115,15 @@ export class User {
 
   @OneToMany(() => PostComment, (comment) => comment.user)
   comments: PostComment[];
+
+  @ManyToMany(() => User, (user) => user.followed)
+  @JoinTable({
+    name: 'follows',
+    joinColumn: { name: 'followerId' },
+    inverseJoinColumn: { name: 'followedId' },
+  })
+  followers: User[]; // Những người theo dõi người dùng này
+
+  @ManyToMany(() => User, (user) => user.followers, { cascade: true })
+  followed: User[]; // Những người mà người dùng này đang theo dõi
 }
