@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
+  Inject,
   Param,
   Put,
   Query,
@@ -29,6 +31,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import { FollowsService } from '../follow/follows.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -47,6 +50,8 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly fileUploadsService: FileUploadService,
+    @Inject(forwardRef(() => FollowsService))
+    private readonly followsService: FollowsService,
   ) {}
 
   @Get(':id')
@@ -121,5 +126,43 @@ export class UsersController {
   })
   async deleteUser(@Param('id') id: number, @Req() req: any): Promise<void> {
     return this.usersService.deleteUser(id, req);
+  }
+
+  @Get(':userId/followers')
+  @ApiOperation({
+    summary: 'Lấy danh sách những người theo dõi userId',
+  })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async getFollowers(
+    @Param('userId') userId: number,
+    @Query('currentPage') currentPage: number = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return await this.followsService.getFollowers(userId, pageNumber);
+  }
+
+  @Get(':userId/followings')
+  @ApiOperation({
+    summary: 'Lấy danh sách những người mà userId đang theo dõi',
+  })
+  @ApiQuery({
+    name: 'currentPage',
+    required: false,
+    description: 'Trang hiện tại (mặc định là 1)',
+    type: Number,
+    example: 1,
+  })
+  async getFollowedUsers(
+    @Param('userId') userId: number,
+    @Query('currentPage') currentPage: number = 1,
+  ) {
+    const pageNumber = Number(currentPage);
+    return await this.followsService.getFollowedUsers(userId, pageNumber);
   }
 }
