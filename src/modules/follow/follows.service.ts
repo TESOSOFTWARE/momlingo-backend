@@ -54,4 +54,17 @@ export class FollowsService {
 
     await this.followRepository.remove(existingFollow);
   }
+
+  async isUserFollowing(
+    userId: number,
+    targetUserId: number,
+  ): Promise<boolean> {
+    const follow = await this.followRepository
+      .createQueryBuilder('follow')
+      .where('follow.followerId = :userId', { userId })
+      .andWhere('follow.followedId = :targetUserId', { targetUserId })
+      .getOne(); // Chỉ lấy một bản ghi đầu tiên thỏa mãn điều kiện
+
+    return !!follow;
+  }
 }

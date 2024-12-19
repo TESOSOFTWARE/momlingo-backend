@@ -5,7 +5,6 @@ import { PAGINATION } from '../../constants/constants';
 import { PostsService } from '../post/posts.service';
 import { Like as PostLike } from './entities/like.entity' ;
 import { PostComment } from '../post-comment/entities/post-comment.entity';
-import { ChildrenService } from '../children/children.service';
 
 @Injectable()
 export class LikesService {

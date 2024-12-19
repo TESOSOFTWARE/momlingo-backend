@@ -4,7 +4,8 @@ import {
   Delete,
   Get,
   Param,
-  Put, Query,
+  Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -22,7 +23,8 @@ import {
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiOperation, ApiQuery,
+  ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -45,16 +47,15 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly fileUploadsService: FileUploadService,
-  ) {
-  }
+  ) {}
 
   @Get(':id')
   @ApiOperation({
     summary:
       'Lấy thông tin cơ bản của bất kì user nào theo id, không có thông tin children',
   })
-  async getUser(@Param('id') id: number): Promise<User> {
-    return this.usersService.findOneById(id);
+  async getUser(@Param('id') id: number, @Req() req: any) {
+    return this.usersService.getGuestUser(id, req);
   }
 
   @Get(':id/profile')
