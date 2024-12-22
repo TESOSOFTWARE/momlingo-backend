@@ -24,6 +24,8 @@ import { PostsModule } from './modules/post/posts.module';
 import { CommentsModule } from './modules/post-comment/comments.module';
 import { LikesModule } from './modules/post-like/likes.module';
 import { SavesModule } from './modules/post-save/saves.module';
+import { FollowsModule } from './modules/follow/follows.module';
+import { NotificationsModule } from './modules/notification/notifications.module';
 dotenv.config();
 
 @Module({
@@ -53,6 +55,8 @@ dotenv.config();
     CommentsModule,
     LikesModule,
     SavesModule,
+    FollowsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [
@@ -65,8 +69,6 @@ dotenv.config();
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

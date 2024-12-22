@@ -16,7 +16,7 @@ import { SavesService } from '../post-save/saves.service';
 export class PostsService {
   constructor(
     @InjectRepository(Post)
-    private postRepository: Repository<Post>,
+    public postRepository: Repository<Post>,
     @InjectRepository(PostImage)
     readonly postImageRepository: Repository<PostImage>,
     readonly tagsService: TagsService,
@@ -47,7 +47,7 @@ export class PostsService {
       throw new NotFoundException('Post not found');
     }
     const liked = await this.likesService.hasUserLikedPost(id, req.user.id);
-    const saved = await this.likesService.hasUserLikedPost(id, req.user.id);
+    const saved = await this.savesService.hasUserSavedPost(id, req.user.id);
 
     return {
       ...post,
@@ -171,6 +171,40 @@ export class PostsService {
     };
   }
 
+  async findAllMyPostSaved(req: any, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const [savedPosts, total] = await this.savesService.saveRepository.findAndCount({
+      where: { userId: req.user.id },
+      relations: ['post'], // Lấy các bài viết đã lưu
+      skip: (currentPage - 1) * limit,
+      take: limit,
+      order: {
+        createdAt: 'DESC',  // Sắp xếp theo ngày lưu của bài viết
+      },
+    });
+    const posts = savedPosts.map(save => save.post);
+    const totalPages = Math.ceil(total / limit);
+
+    const postsWithAdditionalInfo = await Promise.all(
+        posts.map(async (post) => {
+          const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+          const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+          return {
+            ...post,
+            liked,
+            saved,
+          };
+        }),
+    );
+
+    return {
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
   async findAllPostOfGuest(userId: number, req: any, currentPage: number) {
     const limit = PAGINATION.LIMIT;
     const [data, total] = await this.postRepository.findAndCount({
@@ -236,6 +270,43 @@ export class PostsService {
     );
 
     // Trả về kết quả với thông tin bổ sung
+    return {
+      data: postsWithAdditionalInfo,
+      total,
+      totalPages,
+      currentPage,
+    };
+  }
+
+  async searchAllPostOnNewFeed(req: any, text: string, currentPage: number) {
+    const limit = PAGINATION.LIMIT;
+    const searchText = `%${text}%`;
+
+    const queryBuilder = this.postRepository.createQueryBuilder('post')
+        .leftJoinAndSelect('post.tags', 'tag') // JOIN với bảng tags
+        .leftJoinAndSelect('post.images', 'image')
+        .leftJoinAndSelect('post.user', 'user')
+        .where('post.content LIKE :searchText', { searchText }) // Tìm trong content
+        .orWhere('tag.name LIKE :searchText', { searchText }) // Tìm trong name của tag
+        .skip((currentPage - 1) * limit)
+        .take(limit)
+        .orderBy('post.createdAt', 'DESC');
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    const postsWithAdditionalInfo = await Promise.all(
+        data.map(async (post) => {
+          const liked = await this.likesService.hasUserLikedPost(post.id, req.user.id);
+          const saved = await this.savesService.hasUserSavedPost(post.id, req.user.id);
+          return {
+            ...post,
+            liked,
+            saved,
+          };
+        }),
+    );
+
     return {
       data: postsWithAdditionalInfo,
       total,
