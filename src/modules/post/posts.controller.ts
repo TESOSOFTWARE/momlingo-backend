@@ -191,4 +191,24 @@ export class PostsController {
   async delete(@Param('id') id: number, @Req() req: any) {
     return this.postsService.deletePost(id, req);
   }
+
+  @Put(':id/enable-comment')
+  @ApiOperation({ summary: 'Update trạng thái enable comment' })
+  @ApiBody({
+    description: 'enable comment',
+    schema: {
+      type: 'object',
+      properties: {
+        postId: { type: 'boolean' },
+      },
+      required: ['enableComment'],
+    },
+  })
+  async updateEnableComment(
+    @Param('id') id: number,
+    @Body() body: { enableComment: boolean }
+  ): Promise<MyPost> {
+    const { enableComment } = body;
+    return this.postsService.updateEnableComment(id, enableComment);
+  }
 }
