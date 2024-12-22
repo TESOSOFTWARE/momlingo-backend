@@ -49,7 +49,9 @@ export class CommentsService {
       const post = await this.postsService.findOneById(createPostCommentDto.postId, manager);
       await this.postsService.updateCommentsCount(post, 'increase', manager);
       const postComment = repo.create(createPostCommentDto);
-      return await repo.save(postComment);
+      const savedPostComment =  await repo.save(postComment);
+      savedPostComment.user = req.user;
+      return savedPostComment;
     });
   }
 
