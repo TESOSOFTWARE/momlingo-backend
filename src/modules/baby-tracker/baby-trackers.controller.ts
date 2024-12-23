@@ -213,33 +213,37 @@ export class BabyTrackersController {
     @Req() req,
   ) {
     try {
-      console.log('update', updateBabyTrackerDto);
-      // TODO, change to WeekGuard later
-      const existingTracker =
-        await this.babyTrackersService.findOneByWeekWithRelations(
-          updateBabyTrackerDto.week,
-        );
-
-      console.log('existingTracker', existingTracker);
-
       if (files.thumbnail3DMom[0]) {
         updateBabyTrackerDto.thumbnail3DUrlMom = `${req.protocol}://${req.headers.host}/${files.thumbnail3DMom[0].path}`;
+      }
+      if (files.thumbnail3DBaby[0]) {
+        updateBabyTrackerDto.thumbnail3DUrlBaby = `${req.protocol}://${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
+      }
+      if (files.symbolicImageBaby[0]) {
+        updateBabyTrackerDto.symbolicImageUrl = `${req.protocol}://${req.headers.host}/${files.symbolicImageBaby[0].path}`;
+      }
+
+      // TODO, change to WeekGuard later
+      const existingTracker =
+          await this.babyTrackersService.findOneByWeekWithRelations(
+              updateBabyTrackerDto.week,
+          );
+
+      if (files.thumbnail3DMom[0]) {
         if (!existingTracker) {
           this.fileUploadsService.deleteFile(
-            updateBabyTrackerDto.thumbnail3DUrlMom,
+              updateBabyTrackerDto.thumbnail3DUrlMom,
           );
         }
       }
       if (files.thumbnail3DBaby[0]) {
-        updateBabyTrackerDto.thumbnail3DUrlBaby = `${req.protocol}://${req.headers.host}/${files.thumbnail3DBaby[0].path}`;
         if (!existingTracker) {
           this.fileUploadsService.deleteFile(
-            updateBabyTrackerDto.thumbnail3DUrlBaby,
+              updateBabyTrackerDto.thumbnail3DUrlBaby,
           );
         }
       }
       if (files.symbolicImageBaby[0]) {
-        updateBabyTrackerDto.symbolicImageUrl = `${req.protocol}://${req.headers.host}/${files.symbolicImageBaby[0].path}`;
         if (!existingTracker) {
           this.fileUploadsService.deleteFile(updateBabyTrackerDto.symbolicImageUrl);
         }
