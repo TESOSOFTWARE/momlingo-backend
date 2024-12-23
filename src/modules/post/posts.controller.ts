@@ -6,13 +6,19 @@ import {
   Param,
   Put,
   Post,
-  Query, Req, UploadedFiles,
-  UseGuards, UseInterceptors,
+  Query,
+  Req,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import {
-  ApiBearerAuth, ApiBody, ApiConsumes,
-  ApiOperation, ApiQuery,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -24,6 +30,7 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs-extra';
 import { extname } from 'path';
 import { Post as MyPost } from './entities/post.entity';
+import { PostStatus } from '../../enums/post-status.enum';
 
 const postMulterOptions: MulterOptions = {
   storage: diskStorage({
@@ -63,8 +70,7 @@ const postMulterOptions: MulterOptions = {
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {
-  }
+  constructor(private readonly postsService: PostsService) {}
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy post detail theo id' })
@@ -80,8 +86,7 @@ export class PostsController {
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 200,
-    description:
-      'Tối đa 5 ảnh, mỗi ảnh k quá 5Mb',
+    description: 'Tối đa 5 ảnh, mỗi ảnh k quá 5Mb',
   })
   @UseInterceptors(FilesInterceptor('images', 5, postMulterOptions))
   async createPost(
@@ -101,10 +106,7 @@ export class PostsController {
     type: Number,
     example: 1,
   })
-  async findAllMyPost(
-    @Query('currentPage') currentPage = 1,
-    @Req() req: any,
-  ) {
+  async findAllMyPost(@Query('currentPage') currentPage = 1, @Req() req: any) {
     const pageNumber = Number(currentPage);
     return this.postsService.findAllMyPost(req, pageNumber);
   }
@@ -119,8 +121,8 @@ export class PostsController {
     example: 1,
   })
   async findAllMyPostSaved(
-      @Query('currentPage') currentPage = 1,
-      @Req() req: any,
+    @Query('currentPage') currentPage = 1,
+    @Req() req: any,
   ) {
     const pageNumber = Number(currentPage);
     return this.postsService.findAllMyPostSaved(req, pageNumber);
@@ -178,9 +180,9 @@ export class PostsController {
     example: '',
   })
   async searchAllPostOnNewFeed(
-      @Query('text') text = '',
-      @Query('currentPage') currentPage = 1,
-      @Req() req: any,
+    @Query('text') text = '',
+    @Query('currentPage') currentPage = 1,
+    @Req() req: any,
   ) {
     const pageNumber = Number(currentPage);
     return this.postsService.searchAllPostOnNewFeed(req, text, pageNumber);
@@ -195,20 +197,39 @@ export class PostsController {
   @Put(':id/enable-comment')
   @ApiOperation({ summary: 'Update trạng thái enable comment' })
   @ApiBody({
-    description: 'enable comment',
+    description: 'Update enable comment',
     schema: {
       type: 'object',
       properties: {
-        postId: { type: 'boolean' },
+        enableComment: { type: 'boolean' },
       },
       required: ['enableComment'],
     },
   })
   async updateEnableComment(
     @Param('id') id: number,
-    @Body() body: { enableComment: boolean }
+    @Body() body: { enableComment: boolean },
   ): Promise<MyPost> {
     const { enableComment } = body;
     return this.postsService.updateEnableComment(id, enableComment);
+  }
+
+  @Put(':id/edit-privacy')
+  @ApiOperation({ summary: 'Update privacy(private, public)' })
+  @ApiBody({
+    description: 'update privacy',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', enum: Object.values(PostStatus) },
+      },
+      required: ['status'],
+    },
+  })
+  async updatePostStatus(
+    @Param('id') id: number,
+    @Body() body: { status: PostStatus },
+  ): Promise<MyPost> {
+    return this.postsService.updatePostStatus(id, body.status);
   }
 }

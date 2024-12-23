@@ -21,8 +21,7 @@ export class MusicsService {
     @InjectRepository(MusicSong)
     private musicSongRepository: Repository<MusicSong>,
     private readonly fileUploadsService: FileUploadService,
-  ) {
-  }
+  ) {}
 
   /// --- Category service START ---
   async createCategory(categoryDto: MusicCategoryDto): Promise<MusicCategory> {
@@ -112,7 +111,7 @@ export class MusicsService {
   /// --- Category service END ---
 
   /// --- Song service START ---
-  async createSong(songDto: MusicSongDto): Promise<MusicSong> {
+  async createSong(songDto: MusicSongDto) {
     const category = await this.musicCategoryRepository.findOne({
       where: { id: songDto.categoryId },
     });
@@ -123,7 +122,11 @@ export class MusicsService {
       ...songDto,
       category,
     });
-    return await this.musicSongRepository.save(song);
+    const savedSong = await this.musicSongRepository.save(song);
+    return {
+      ...savedSong,
+      categoryId: savedSong.category.id,
+    };
   }
 
   async updateSong(id: number, songDto: MusicSongDto): Promise<MusicSong> {

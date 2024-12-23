@@ -150,7 +150,7 @@ export class MusicsController {
     @UploadedFile() file: Express.Multer.File,
     @Body() songDto: MusicSongDto,
     @Req() req,
-  ): Promise<MusicSong> {
+  ) {
     try {
       if (file) {
         songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
