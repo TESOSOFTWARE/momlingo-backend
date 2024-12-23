@@ -158,12 +158,19 @@ export class MusicsService {
     };
   }
 
-  async findOneSong(id: number): Promise<MusicSong> {
-    const song = await this.musicSongRepository.findOneBy({ id });
+  async findOneSong(id: number) {
+    const song = await this.musicSongRepository.findOne({
+      where: { id: id },
+      relations: ['category'],
+    });
     if (!song) {
       throw new NotFoundException(`Song with ID ${id} not found`);
     }
-    return song;
+    return {
+      ...song,
+      categoryId: song.category.id,
+      category: song.category,
+    };
   }
 
   async findAllSongByCategoryId(categoryId: number, currentPage: number) {
