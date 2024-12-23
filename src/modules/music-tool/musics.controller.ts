@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   Req,
+  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,7 +18,8 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiOperation, ApiQuery,
+  ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -31,6 +33,7 @@ import {
 } from '../file-upload/file-upload.service';
 import { MusicSongDto } from './dtos/music-song.dto';
 import { MusicSong } from './entities/music-song.entity';
+import { UpdateMusicSongDto } from './dtos/update-music-song.dto';
 
 @ApiTags('Music Tool')
 @Controller('musics')
@@ -49,8 +52,7 @@ export class MusicsController {
   constructor(
     private readonly musicsService: MusicsService,
     private readonly fileUploadsService: FileUploadService,
-  ) {
-  }
+  ) {}
 
   /// --- Controller for Category - START ---
   @Post('/category')
@@ -102,12 +104,15 @@ export class MusicsController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<MusicCategory> {
+    const category = await this.musicsService.findOneCategory(id);
     try {
-      const category = await this.musicsService.findOneCategory(id);
       if (file) {
         categoryDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
-      const updateCategory = await this.musicsService.updateCategory(id, categoryDto);
+      const updateCategory = await this.musicsService.updateCategory(
+        id,
+        categoryDto,
+      );
       if (category.thumbnailUrl) {
         this.fileUploadsService.deleteFile(category.thumbnailUrl);
       }
@@ -173,9 +178,7 @@ export class MusicsController {
     type: Number,
     example: 1,
   })
-  async findAllSong(
-    @Query('currentPage') currentPage = 1,
-  ) {
+  async findAllSong(@Query('currentPage') currentPage = 1) {
     const pageNumber = Number(currentPage);
     return this.musicsService.findAllSong(pageNumber);
   }
@@ -189,9 +192,7 @@ export class MusicsController {
     type: Number,
     example: 1,
   })
-  async findAllPopularSong(
-    @Query('currentPage') currentPage = 1,
-  ) {
+  async findAllPopularSong(@Query('currentPage') currentPage = 1) {
     const pageNumber = Number(currentPage);
     return this.musicsService.findAllPopularSong(pageNumber);
   }
@@ -205,7 +206,10 @@ export class MusicsController {
     type: Number,
     example: 1,
   })
-  async findAllSongByCategoryId(@Param('id') id: number, @Query('currentPage') currentPage = 1) {
+  async findAllSongByCategoryId(
+    @Param('id') id: number,
+    @Query('currentPage') currentPage = 1,
+  ) {
     const pageNumber = Number(currentPage);
     return this.musicsService.findAllSongByCategoryId(id, pageNumber);
   }
@@ -224,15 +228,15 @@ export class MusicsController {
   )
   async updateSong(
     @Param('id') id: number,
-    @Body() songDto: MusicSongDto,
+    @Body() songDto: UpdateMusicSongDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
-  ): Promise<MusicSong> {
+  ) {
     try {
-      const song = await this.musicsService.findOneSong(id);
       if (file) {
         songDto.fileUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
+      const song = await this.musicsService.findOneSong(id);
       const songRes = await this.musicsService.updateSong(id, songDto);
       if (file) {
         if (song.fileUrl) {
@@ -270,7 +274,10 @@ export class MusicsController {
     type: Number,
     example: 1,
   })
-  async searchSongNames(@Query('name') name: string, @Query('currentPage') currentPage = 1) {
+  async searchSongNames(
+    @Query('name') name: string,
+    @Query('currentPage') currentPage = 1,
+  ) {
     const pageNumber = Number(currentPage);
     return this.musicsService.findSongByName(name, pageNumber);
   }

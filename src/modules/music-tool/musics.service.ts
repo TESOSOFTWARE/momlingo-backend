@@ -12,6 +12,7 @@ import { MusicSongDto } from './dtos/music-song.dto';
 import { MusicCategoryType } from '../../enums/music-category-type.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { PAGINATION } from '../../constants/constants';
+import { UpdateMusicSongDto } from './dtos/update-music-song.dto';
 
 @Injectable()
 export class MusicsService {
@@ -129,9 +130,17 @@ export class MusicsService {
     };
   }
 
-  async updateSong(id: number, songDto: MusicSongDto): Promise<MusicSong> {
+  async updateSong(id: number, songDto: UpdateMusicSongDto) {
     await this.musicSongRepository.update(id, songDto);
-    return this.musicSongRepository.findOneBy({ id });
+    const song = await this.musicSongRepository.findOne({
+      where: { id: id },
+      relations: ['category'],
+    });
+    return {
+      ...song,
+      categoryId: song.category.id,
+      category: song.category,
+    };
   }
 
   async findAllSong(currentPage: number) {
