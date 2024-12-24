@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Follow } from './entities/follow.entity';
@@ -14,6 +19,7 @@ export class FollowsService {
     private readonly followRepository: Repository<Follow>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
   ) {}
 
@@ -45,14 +51,14 @@ export class FollowsService {
 
     const followSaved = await this.followRepository.save(follow);
     try {
-      await this.notificationsService.createOrUpdate({
+      this.notificationsService.createOrUpdate({
         userId: followedId,
         actorId: followerId,
         postId: null,
         type: NotificationType.FOLLOW,
       });
     } catch (e) {
-      console.log("Error", e);
+      console.log('Error', e);
     }
     return followSaved;
   }
@@ -103,12 +109,14 @@ export class FollowsService {
   }
 
   async getAllFollowers(userId: number, manager?: EntityManager): Promise<any> {
-    const repo = manager ? manager.getRepository(Follow) : this.followRepository;
+    const repo = manager
+      ? manager.getRepository(Follow)
+      : this.followRepository;
     const follows = await repo.find({
       where: { followed: { id: userId } },
       relations: ['follower'],
     });
-    return follows.map(follow => follow.follower);
+    return follows.map((follow) => follow.follower);
   }
 
   // Lấy danh sách những người mà userId đang theo dõi

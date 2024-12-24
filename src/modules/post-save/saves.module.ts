@@ -7,7 +7,11 @@ import { SavesController } from './saves.controller';
 import { NotificationsModule } from '../notification/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Save]), forwardRef(() => PostsModule), forwardRef(() => NotificationsModule)],
+  imports: [
+    TypeOrmModule.forFeature([Save]),
+    forwardRef(() => PostsModule),
+    forwardRef(() => NotificationsModule),
+  ],
   providers: [SavesService],
   controllers: [SavesController],
   exports: [SavesService],

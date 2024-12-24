@@ -7,7 +7,11 @@ import { CommentsService } from './comments.service';
 import { NotificationsModule } from '../notification/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostComment]), PostsModule, NotificationsModule],
+  imports: [
+    TypeOrmModule.forFeature([PostComment]),
+    PostsModule,
+    NotificationsModule,
+  ],
   providers: [CommentsService],
   controllers: [CommentsController],
   exports: [CommentsService],

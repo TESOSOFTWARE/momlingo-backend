@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { PAGINATION } from '../../constants/constants';
@@ -15,13 +20,15 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => PostsService))
     private readonly postsService: PostsService,
-  ) {
-  }
+  ) {}
 
-  async createOrUpdate(createNotificationDto: CreateNotificationDto): Promise<Notification> {
+  async createOrUpdate(
+    createNotificationDto: CreateNotificationDto,
+  ): Promise<Notification> {
     const { userId, actorId, postId, type } = createNotificationDto;
     // const notification = this.notificationRepository.create(createNotificationDto);
     // return await this.notificationRepository.save(notification);
@@ -34,10 +41,20 @@ export class NotificationsService {
       notification.updatedAt = notification.createdAt;
       return this.notificationRepository.save(notification);
     } else {
-      const actor = await this.usersService.findOneByIdWithoutException(createNotificationDto.actorId);
-      const post = await this.postsService.findOneByIdWithoutException(createNotificationDto.postId);
-      const title = createNotificationDto.type == NotificationType.SYSTEM ? createNotificationDto.title : this.getTitleFromType(createNotificationDto);
-      const body = createNotificationDto.type == NotificationType.SYSTEM ? createNotificationDto.body : this.getBodyFromType(createNotificationDto, actor, post);
+      const actor = await this.usersService.findOneByIdWithoutException(
+        createNotificationDto.actorId,
+      );
+      const post = await this.postsService.findOneByIdWithoutException(
+        createNotificationDto.postId,
+      );
+      const title =
+        createNotificationDto.type == NotificationType.SYSTEM
+          ? createNotificationDto.title
+          : this.getTitleFromType(createNotificationDto);
+      const body =
+        createNotificationDto.type == NotificationType.SYSTEM
+          ? createNotificationDto.body
+          : this.getBodyFromType(createNotificationDto, actor, post);
 
       notification = this.notificationRepository.create({
         ...createNotificationDto,
@@ -51,7 +68,9 @@ export class NotificationsService {
   }
 
   async remove(id: number): Promise<void> {
-    const notification = await this.notificationRepository.findOne({ where: { id } });
+    const notification = await this.notificationRepository.findOne({
+      where: { id },
+    });
     if (!notification) {
       throw new Error('Notification not found');
     }
@@ -59,7 +78,9 @@ export class NotificationsService {
   }
 
   async findOneById(id: number, manager?: EntityManager) {
-    const repo = manager ? manager.getRepository(Post) : this.notificationRepository;
+    const repo = manager
+      ? manager.getRepository(Post)
+      : this.notificationRepository;
     const noti = await repo.findOneBy({ id });
     if (!noti) {
       throw new NotFoundException('Notification not found');
@@ -68,7 +89,9 @@ export class NotificationsService {
   }
 
   async getNotificationDetail(id: number, manager?: EntityManager) {
-    const repo = manager ? manager.getRepository(Post) : this.notificationRepository;
+    const repo = manager
+      ? manager.getRepository(Post)
+      : this.notificationRepository;
     const notification = await repo.findOne({
       where: { id },
       relations: ['user', 'actor', 'post'],
@@ -81,15 +104,16 @@ export class NotificationsService {
 
   async findAllByUserId(userId: number, currentPage: number) {
     const limit = PAGINATION.LIMIT;
-    const [notifications, total] = await this.notificationRepository.findAndCount({
-      where: { userId },
-      relations: ['user', 'actor', 'post'],
-      order: {
-        createdAt: 'DESC',
-      },
-      skip: (currentPage - 1) * limit,
-      take: limit,
-    });
+    const [notifications, total] =
+      await this.notificationRepository.findAndCount({
+        where: { userId },
+        relations: ['user', 'actor', 'post'],
+        order: {
+          createdAt: 'DESC',
+        },
+        skip: (currentPage - 1) * limit,
+        take: limit,
+      });
     const totalPages = Math.ceil(total / limit);
 
     return {
@@ -101,7 +125,9 @@ export class NotificationsService {
   }
 
   async markAsRead(id: number): Promise<Notification> {
-    const notification = await this.notificationRepository.findOne({ where: { id } });
+    const notification = await this.notificationRepository.findOne({
+      where: { id },
+    });
     if (!notification) {
       throw new NotFoundException('Notification not found');
     }
@@ -110,7 +136,9 @@ export class NotificationsService {
     return await this.notificationRepository.save(notification);
   }
 
-  private getTitleFromType(createNotificationDto: CreateNotificationDto): string {
+  private getTitleFromType(
+    createNotificationDto: CreateNotificationDto,
+  ): string {
     switch (createNotificationDto.type) {
       case NotificationType.SYSTEM:
         return 'Momlingo thông báo';
@@ -129,7 +157,11 @@ export class NotificationsService {
     }
   }
 
-  private getBodyFromType(createNotificationDto: CreateNotificationDto, actor?: User, post?: Post): string {
+  private getBodyFromType(
+    createNotificationDto: CreateNotificationDto,
+    actor?: User,
+    post?: Post,
+  ): string {
     switch (createNotificationDto.type) {
       case NotificationType.SYSTEM:
         return '';
@@ -147,5 +179,4 @@ export class NotificationsService {
         return '';
     }
   }
-
 }

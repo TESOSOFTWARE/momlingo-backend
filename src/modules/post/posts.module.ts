@@ -12,13 +12,17 @@ import { NotificationsModule } from '../notification/notifications.module';
 import { FollowsModule } from '../follow/follows.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Post, PostImage]),
-    forwardRef(() => LikesModule), forwardRef(() => SavesModule),
-    TagsModule, FileUploadModule, forwardRef(() => NotificationsModule), FollowsModule
+  imports: [
+    TypeOrmModule.forFeature([Post, PostImage]),
+    forwardRef(() => LikesModule),
+    forwardRef(() => SavesModule),
+    TagsModule,
+    FileUploadModule,
+    forwardRef(() => FollowsModule),
+    forwardRef(() => NotificationsModule),
   ],
   providers: [PostsService],
   controllers: [PostsController],
   exports: [PostsService],
 })
-export class PostsModule {
-}
+export class PostsModule {}

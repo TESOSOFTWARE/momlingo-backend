@@ -7,7 +7,11 @@ import { LikesController } from './likes.controller';
 import { NotificationsModule } from '../notification/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Like]), forwardRef(() => PostsModule), NotificationsModule],
+  imports: [
+    TypeOrmModule.forFeature([Like]),
+    forwardRef(() => PostsModule),
+    forwardRef(() => NotificationsModule),
+  ],
   providers: [LikesService],
   controllers: [LikesController],
   exports: [LikesService],
