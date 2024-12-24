@@ -26,10 +26,10 @@ export class Notification {
   @Column({ type: 'integer' })
   userId: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   actorId: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   postId: number;
 
   @Column({ default: false })
