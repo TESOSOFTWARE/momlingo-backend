@@ -169,10 +169,10 @@ export class NewsController {
     @Req() req: any,
   ): Promise<News> {
     try {
-      const news = await this.newsService.findOneNews(id);
       if (file) {
         newsDto.thumbnailUrl = `${req.protocol}://${req.headers.host}/${file.path}`;
       }
+      const news = await this.newsService.findOneNews(id);
       const newsRes = await this.newsService.updateNews(id, newsDto);
       if (file) {
         if (news.thumbnailUrl) {

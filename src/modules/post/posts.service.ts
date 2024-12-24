@@ -392,4 +392,17 @@ export class PostsService {
       relations: ['images', 'tags', 'user'],
     });
   }
+
+  async updatePostStatus(postId: number, status: PostStatus): Promise<Post> {
+    const post = await this.postRepository.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${postId} not found`);
+    }
+    post.status = status;
+    await this.postRepository.save(post);
+    return this.postRepository.findOne({
+      where: { id: post.id },
+      relations: ['images', 'tags', 'user'],
+    });
+  }
 }

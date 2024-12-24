@@ -12,6 +12,7 @@ import { MusicSongDto } from './dtos/music-song.dto';
 import { MusicCategoryType } from '../../enums/music-category-type.enum';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { PAGINATION } from '../../constants/constants';
+import { UpdateMusicSongDto } from './dtos/update-music-song.dto';
 
 @Injectable()
 export class MusicsService {
@@ -21,8 +22,7 @@ export class MusicsService {
     @InjectRepository(MusicSong)
     private musicSongRepository: Repository<MusicSong>,
     private readonly fileUploadsService: FileUploadService,
-  ) {
-  }
+  ) {}
 
   /// --- Category service START ---
   async createCategory(categoryDto: MusicCategoryDto): Promise<MusicCategory> {
@@ -112,7 +112,7 @@ export class MusicsService {
   /// --- Category service END ---
 
   /// --- Song service START ---
-  async createSong(songDto: MusicSongDto): Promise<MusicSong> {
+  async createSong(songDto: MusicSongDto) {
     const category = await this.musicCategoryRepository.findOne({
       where: { id: songDto.categoryId },
     });
@@ -123,12 +123,24 @@ export class MusicsService {
       ...songDto,
       category,
     });
-    return await this.musicSongRepository.save(song);
+    const savedSong = await this.musicSongRepository.save(song);
+    return {
+      ...savedSong,
+      categoryId: savedSong.category.id,
+    };
   }
 
-  async updateSong(id: number, songDto: MusicSongDto): Promise<MusicSong> {
+  async updateSong(id: number, songDto: UpdateMusicSongDto) {
     await this.musicSongRepository.update(id, songDto);
-    return this.musicSongRepository.findOneBy({ id });
+    const song = await this.musicSongRepository.findOne({
+      where: { id: id },
+      relations: ['category'],
+    });
+    return {
+      ...song,
+      categoryId: song.category.id,
+      category: song.category,
+    };
   }
 
   async findAllSong(currentPage: number) {
@@ -146,12 +158,19 @@ export class MusicsService {
     };
   }
 
-  async findOneSong(id: number): Promise<MusicSong> {
-    const song = await this.musicSongRepository.findOneBy({ id });
+  async findOneSong(id: number) {
+    const song = await this.musicSongRepository.findOne({
+      where: { id: id },
+      relations: ['category'],
+    });
     if (!song) {
       throw new NotFoundException(`Song with ID ${id} not found`);
     }
-    return song;
+    return {
+      ...song,
+      categoryId: song.category.id,
+      category: song.category,
+    };
   }
 
   async findAllSongByCategoryId(categoryId: number, currentPage: number) {
