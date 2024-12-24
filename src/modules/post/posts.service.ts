@@ -11,6 +11,9 @@ import { PostStatus } from '../../enums/post-status.enum';
 import { PAGINATION } from '../../constants/constants';
 import { LikesService } from '../post-like/likes.service';
 import { SavesService } from '../post-save/saves.service';
+import { NotificationsService } from '../notification/notifications.service';
+import { NotificationType } from '../../enums/notification-type.enum';
+import { FollowsService } from '../follow/follows.service';
 
 @Injectable()
 export class PostsService {
@@ -25,7 +28,15 @@ export class PostsService {
     @Inject(forwardRef(() => SavesService))
     private readonly savesService: SavesService,
     private readonly fileUploadService: FileUploadService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
+    private readonly followsService: FollowsService,
   ) {
+  }
+
+  async findOneByIdWithoutException(id?: number, manager?: EntityManager): Promise<Post | null> {
+    const repo = manager ? manager.getRepository(Post) : this.postRepository;
+    return await repo.findOneBy({ id });
   }
 
   async findOneById(id: number, manager?: EntityManager): Promise<Post | null> {
@@ -101,10 +112,27 @@ export class PostsService {
           await postImageRepo.save(postImages);
         }
 
-        return await postRepo.findOne({
+        const postSaved = await postRepo.findOne({
           where: { id: postId },
           relations: ['images', 'tags'],
         });
+
+        try{
+          this.followsService.getAllFollowers(userId, manager).then((followers) => {
+            for (const follower of followers) {
+              if (follower.id !== userId) {
+                this.notificationsService.createOrUpdate({
+                  userId: follower.id,
+                  actorId: userId,
+                  postId: savedPost.id,
+                  type: NotificationType.NEW_POST,
+                });
+              }
+            }
+          });
+        } catch (e) {}
+
+        return postSaved;
       } catch (e) {
         for (let i = 0; i < (files ?? []).length; i++) {
           await this.fileUploadService.deleteFile(files[i].path);

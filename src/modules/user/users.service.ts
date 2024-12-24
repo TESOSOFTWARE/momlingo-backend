@@ -62,6 +62,11 @@ export class UsersService {
     return user;
   }
 
+  async findOneByIdWithoutException(id?: number, manager?: EntityManager): Promise<User | null> {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
+    return await repo.findOneBy({ id });
+  }
+
   async findOneById(id: number, manager?: EntityManager): Promise<User | null> {
     const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const user = await repo.findOneBy({ id });

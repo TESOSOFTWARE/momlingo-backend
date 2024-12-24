@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Follow } from './entities/follow.entity';
 import { User } from '../user/entities/user.entity';
 import { PAGINATION } from '../../constants/constants';
+import { NotificationsService } from '../notification/notifications.service';
+import { NotificationType } from '../../enums/notification-type.enum';
 
 @Injectable()
 export class FollowsService {
@@ -12,6 +14,7 @@ export class FollowsService {
     private readonly followRepository: Repository<Follow>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // Follow một người dùng
@@ -40,7 +43,18 @@ export class FollowsService {
     follow.follower = follower;
     follow.followed = followed;
 
-    return this.followRepository.save(follow);
+    const followSaved = await this.followRepository.save(follow);
+    try {
+      await this.notificationsService.createOrUpdate({
+        userId: followedId,
+        actorId: followerId,
+        postId: null,
+        type: NotificationType.FOLLOW,
+      });
+    } catch (e) {
+      console.log("Error", e);
+    }
+    return followSaved;
   }
 
   // Unfollow một người dùng
@@ -86,6 +100,15 @@ export class FollowsService {
       totalPages: Math.ceil(total / limit),
       currentPage: currentPage,
     };
+  }
+
+  async getAllFollowers(userId: number, manager?: EntityManager): Promise<any> {
+    const repo = manager ? manager.getRepository(Follow) : this.followRepository;
+    const follows = await repo.find({
+      where: { followed: { id: userId } },
+      relations: ['follower'],
+    });
+    return follows.map(follow => follow.follower);
   }
 
   // Lấy danh sách những người mà userId đang theo dõi

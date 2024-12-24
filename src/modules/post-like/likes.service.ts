@@ -5,6 +5,8 @@ import { PAGINATION } from '../../constants/constants';
 import { PostsService } from '../post/posts.service';
 import { Like as PostLike } from './entities/like.entity' ;
 import { PostComment } from '../post-comment/entities/post-comment.entity';
+import { NotificationType } from '../../enums/notification-type.enum';
+import { NotificationsService } from '../notification/notifications.service';
 
 @Injectable()
 export class LikesService {
@@ -13,6 +15,7 @@ export class LikesService {
     private likeRepository: Repository<PostLike>,
     @Inject(forwardRef(() => PostsService))
     private postsService: PostsService,
+    private readonly notificationsService: NotificationsService,
   ) {
   }
 
@@ -34,6 +37,18 @@ export class LikesService {
         await this.postsService.updateLikesCount(post, 'increase', manager);
         const postLike = repo.create({ postId, userId: req.user.id });
         await repo.save(postLike);
+        try {
+          if (post.userId != req.user.id) {
+            await this.notificationsService.createOrUpdate({
+              userId: post.userId,
+              actorId: req.user.id,
+              postId: post.id,
+              type: NotificationType.LIKE_POST,
+            });
+          }
+        } catch (e) {
+          console.log("Error", e);
+        }
       }
     });
   }

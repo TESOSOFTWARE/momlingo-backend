@@ -52,7 +52,7 @@ export class Notification {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'actorId' })
   actor: User;
 

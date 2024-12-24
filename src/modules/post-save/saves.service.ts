@@ -5,6 +5,8 @@ import { PAGINATION } from '../../constants/constants';
 import { PostsService } from '../post/posts.service';
 import { Save } from './entities/save.entity' ;
 import { PostComment } from '../post-comment/entities/post-comment.entity';
+import { NotificationsService } from '../notification/notifications.service';
+import { NotificationType } from '../../enums/notification-type.enum';
 
 @Injectable()
 export class SavesService {
@@ -13,6 +15,7 @@ export class SavesService {
     public saveRepository: Repository<Save>,
     @Inject(forwardRef(() => PostsService))
     private postsService: PostsService,
+    private readonly notificationsService: NotificationsService,
   ) {
   }
 
@@ -34,6 +37,18 @@ export class SavesService {
         await this.postsService.updateSavesCount(post, 'increase', manager);
         const postSave = repo.create({ postId, userId: req.user.id });
         await repo.save(postSave);
+        try {
+          if (post.userId != req.user.id) {
+            await this.notificationsService.createOrUpdate({
+              userId: post.userId,
+              actorId: req.user.id,
+              postId: post.id,
+              type: NotificationType.SAVE_POST,
+            });
+          }
+        } catch (e) {
+          console.log("Error", e);
+        }
       }
     });
   }

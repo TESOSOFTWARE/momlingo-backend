@@ -5,6 +5,8 @@ import { PAGINATION } from '../../constants/constants';
 import { PostComment } from './entities/post-comment.entity';
 import { CreatePostCommentDto } from './dtos/create-post-comment.dto';
 import { PostsService } from '../post/posts.service';
+import { NotificationsService } from '../notification/notifications.service';
+import { NotificationType } from '../../enums/notification-type.enum';
 
 @Injectable()
 export class CommentsService {
@@ -12,6 +14,7 @@ export class CommentsService {
     @InjectRepository(PostComment)
     private commentRepository: Repository<PostComment>,
     private postsService: PostsService,
+    private readonly notificationsService: NotificationsService,
   ) {
   }
 
@@ -51,6 +54,18 @@ export class CommentsService {
       const postComment = repo.create(createPostCommentDto);
       const savedPostComment =  await repo.save(postComment);
       savedPostComment.user = req.user;
+      try {
+        if (post.userId != req.user.id) {
+          await this.notificationsService.createOrUpdate({
+            userId: post.userId,
+            actorId: req.user.id,
+            postId: post.id,
+            type: NotificationType.COMMENT_POST,
+          });
+        }
+      } catch (e) {
+        console.log("Error", e);
+      }
       return savedPostComment;
     });
   }
